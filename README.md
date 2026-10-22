@@ -164,8 +164,6 @@ Essas verificações não substituem testes automatizados. Os arquivos em `tests
 
 ## Limitações e próximos passos
 
-- Validar a execução integral no workspace, incluindo conectividade FTP, bibliotecas e permissões.
-- Separar as células didáticas da carga operacional e parametrizar caminhos e competências.
 - Implementar as transformações Silver, enriquecimento com referências e indicadores Gold.
 - Implementar testes de qualidade, atualização das referências e tratamento de falhas.
 - Versionar a configuração dos jobs e definir a estratégia para revisões de competências já ingeridas; a descoberta atual ignora meses que já constam na Bronze.
