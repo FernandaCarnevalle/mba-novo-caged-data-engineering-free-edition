@@ -2,6 +2,8 @@
 
 Projeto acadêmico de engenharia de dados para ingestão e organização dos microdados de movimentações do Novo Caged no Databricks Free Edition, com Python, PySpark, Delta Lake e Unity Catalog.
 
+**Organização Trabalho via Trello:** https://trello.com/invite/b/6aca28ac2b79adb2bdb0327f/ATTI0613962c5f2f6d8644243304ce2c6644C3F64287/mba-previsao-da-demanda-por-ocupacoes
+
 ## Estado atual
 
 O repositório contém configuração dos schemas, descoberta e download de arquivos do ano vigente, ingestão na camada Bronze e carga de dicionários de referência. A arquitetura Medallion é o objetivo do projeto; as transformações das movimentações para Silver e Gold e as análises ainda não estão implementadas.
