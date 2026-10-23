@@ -1,0 +1,32 @@
+{
+  "name": "novo-caged-pipeline",
+  "max_concurrent_runs": 1,
+  "email_notifications": {
+    "on_failure": ["kevyn.zap@hotmail.com"]
+  },
+  "tasks": [
+    {
+      "task_key": "01_verificar_novos_arquivos",
+      "notebook_task": {
+        "notebook_path": "/Users/kevyn.zap@hotmail.com/mba-novo-caged-data-engineering-free-edition/notebooks/01_ingestao/00_verificar_novos_arquivos",
+        "source": "WORKSPACE"
+      }
+    },
+    {
+      "task_key": "02_landing_to_bronze",
+      "depends_on": [{"task_key": "01_verificar_novos_arquivos"}],
+      "notebook_task": {
+        "notebook_path": "/Users/kevyn.zap@hotmail.com/mba-novo-caged-data-engineering-free-edition/notebooks/01_ingestao/011_landing_to_bronze",
+        "source": "WORKSPACE"
+      }
+    },
+    {
+      "task_key": "03_bronze_to_silver",
+      "depends_on": [{"task_key": "02_landing_to_bronze"}],
+      "notebook_task": {
+        "notebook_path": "/Users/kevyn.zap@hotmail.com/mba-novo-caged-data-engineering-free-edition/notebooks/02_transformacao/020_bronze_to_silver",
+        "source": "WORKSPACE"
+      }
+    }
+  ]
+}
