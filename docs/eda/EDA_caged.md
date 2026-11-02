@@ -268,7 +268,7 @@ Para blindar a leitura contra o artefato de cobertura, as mesmas estatísticas f
 **Por que decompor a série:** previsão exige entender de que padrões a série é feita. A decomposição separa a série em **tendência** (para onde vamos no longo prazo), **sazonalidade** (o padrão que se repete a cada ciclo — aqui, semestres) e **resíduos** (o que sobra de imprevisível). Cada parte determina uma decisão de negócio: tendência → crescimento de capacidade; sazonalidade → calendário de contratação; resíduos → margem de erro inevitável de qualquer modelo.
 
 - ✅ Decomposição concluída (modelo aditivo, `period=2`, dados semestrais)
-- **Variância explicada (tendência + sazonalidade):** a tendência isolada explica **8,64%** — com period=2, o padrão sazonal semestral captura a maior parte da estrutura; a série é dominada por sazonalidade + choque de 2021S1, não por tendência linear forte.
+- **Variância explicada (tendência + sazonalidade):** **8,64%** (`1 − var(resíduo)/var(série)`). Ou seja, com period=2, a decomposição deixa cerca de 91% da variância no resíduo: tendência + sazonalidade explicam pouco da série. Com apenas 12 semestres, essa leitura é cautelosa, e não se deve concluir que a sazonalidade domina o padrão.
 
 ![Decomposição STL da série de admissões](graficos/05_01_decomposicao_stl.png)
 
@@ -308,7 +308,7 @@ Série mensal agregada direto do bronze (`_competencia_referencia`), 2021-01 a 2
 - Admissões (tipos 10, 20, 25, 35, 70, 97) e desligamentos (tipos 31, 32, 33, 40, 43, 45, 50, 60, 80, 90, 98) contados na mesma varredura; mediana de salário calculada apenas sobre as admissões
 - *Nota de execução:* a consulta original filtrava só admissões (o que zerava `desligamentos`); foi corrigida nesta re-execução para computar ambos os fluxos
 
-**Features candidatas:** `adm_lag_1m`, `adm_lag_3m`, `adm_lag_6m`, `adm_lag_12m`, `adm_media_3m`, `adm_media_12m`, `adm_std_3m`, `mes`, `mes_sin`, `mes_cos`, `adm_yoy`, `desl_lag_1m`, `saldo_lag_1m`, `salario_lag_1m`, `t` (todas defasadas para evitar vazamento de futuro).
+**Features candidatas:** `adm_lag_1m`, `adm_lag_3m`, `adm_lag_6m`, `adm_lag_12m`, `adm_media_3m`, `adm_media_12m`, `adm_std_3m`, `mes_sin`, `mes_cos`, `adm_yoy`, `desl_lag_1m`, `saldo_lag_1m`, `salario_lag_1m`, `t` (todas defasadas para evitar vazamento de futuro).
 
 **Amostra da série mensal (15 primeiros meses):**
 
