@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DemandA — Dashboard Integrado: Formação (INEP) × Demanda Profissional (CAGED)</title>
+<style>
+  :root{--azul:#001236;--azul2:#009999;--laranja:#D86DCD;--verm:#D86DCD;--verde:#009999;--tinta:#1c2733;--cinza:#5b6b7c;--fundo:#f4f7fb;--card:#ffffff;--borda:#dce4ee;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--fundo);color:var(--tinta);line-height:1.55;}
+  .container{max-width:1100px;margin:0 auto;padding:0 18px 60px;}
+  header{background:linear-gradient(120deg,#001236 0%,#004d7a 55%,#009999 100%);color:#fff;padding:44px 18px 38px;text-align:center;}
+  header h1{font-size:26px;font-weight:700;letter-spacing:.4px;}
+  header p.sub{margin-top:8px;font-size:14.5px;opacity:.92;}
+  header p.meta{margin-top:14px;font-size:12.5px;opacity:.75;}
+  h2.secao{margin:44px 0 6px;font-size:21px;color:#001236;display:flex;align-items:center;gap:10px;}
+  h2.secao .num{background:#001236;color:#fff;border-radius:8px;font-size:15px;padding:2px 11px;}
+  p.abre{color:var(--cinza);font-size:14px;margin-bottom:16px;max-width:900px;}
+  .card{background:var(--card);border:1px solid var(--borda);border-radius:14px;padding:20px 22px;margin-bottom:18px;box-shadow:0 2px 6px rgba(23,57,94,.06);}
+  .card h3{font-size:16px;color:#001236;margin-bottom:8px;}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:-26px;}
+  .kpi{background:var(--card);border:1px solid var(--borda);border-radius:14px;padding:16px 18px;box-shadow:0 3px 10px rgba(23,57,94,.10);}
+  .kpi .tt{font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:#8a97a5;margin-bottom:2px;}
+  .kpi .v{font-size:25px;font-weight:700;color:var(--azul);}
+  .kpi .v.vv{color:#D86DCD;} .kpi .v.vl{color:#009999;} .kpi .v.vg{color:#009999;}
+  .kpi .t{font-size:12.5px;color:var(--cinza);margin-top:3px;}
+  .tabela{width:100%;border-collapse:collapse;font-size:13.5px;}
+  .tabela th{background:#001236;color:#fff;padding:8px 10px;text-align:left;font-weight:600;}
+  .tabela td{padding:7px 10px;border-bottom:1px solid var(--borda);}
+  .tabela tr:nth-child(even) td{background:#f6f9fc;}
+  .tabela .num{text-align:right;font-variant-numeric:tabular-nums;}
+  .destaque{background:#faf0f9;border-left:4px solid #D86DCD;border-radius:0 10px 10px 0;padding:12px 16px;margin:14px 0;font-size:13.5px;}
+  .destaque b{color:#9c3d92;}
+  .importa{background:#e6f5f5;border-left:4px solid #009999;border-radius:0 10px 10px 0;padding:12px 16px;margin:14px 0;font-size:13.5px;}
+  .importa b{color:#006969;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grafico{background:var(--card);border:1px solid var(--borda);border-radius:14px;padding:16px 18px;margin:14px 0;}
+  .grafico h4{font-size:14.5px;color:#001236;margin-bottom:4px;}
+  .grafico p.exp{font-size:12.5px;color:var(--cinza);margin-bottom:8px;}
+  .legenda{margin-top:8px;font-size:13px;color:var(--cinza);display:flex;flex-wrap:wrap;gap:14px;}
+  .chip{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px;}
+  svg text{font-family:'Segoe UI',sans-serif;}
+  .grid{stroke:#e6edf5;stroke-width:1;}
+  .tick{fill:#5b6b7c;font-size:13px;}
+  .obs{display:grid;grid-template-columns:1fr;gap:16px;}
+  .obs .card h3 .tag{font-size:11px;background:var(--fundo);border:1px solid var(--borda);color:var(--cinza);border-radius:5px;padding:1px 7px;margin-left:6px;font-weight:500;vertical-align:2px;}
+  .feat{border:1px solid var(--borda);border-radius:12px;padding:14px 16px;margin-bottom:12px;background:var(--card);}
+  .feat .fn{font-weight:700;color:#001236;font-size:14px;font-family:Consolas,monospace;}
+  .feat .fp{font-size:13px;color:var(--cinza);margin-top:3px;}
+  .feat .pq{font-size:13px;margin-top:7px;}
+  .feat .ref{font-size:11.5px;color:#8a97a5;margin-top:6px;font-style:italic;}
+  .passo{display:flex;gap:14px;margin-bottom:14px;}
+  .passo .n{flex:0 0 34px;height:34px;background:#001236;color:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;}
+  .passo .tx h3{font-size:15px;color:#001236;}
+  .passo .tx p{font-size:13px;color:var(--cinza);margin-top:3px;}
+  .tabs{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:-20px auto 30px;position:relative;}
+  .tab{border:1px solid var(--borda);background:var(--card);color:#001236;font-weight:700;font-size:14px;padding:11px 24px;border-radius:999px;cursor:pointer;box-shadow:0 3px 10px rgba(23,57,94,.12);font-family:inherit;transition:background .15s,color .15s;}
+  .tab:hover{background:#eef7f7;}
+  .tab.on{background:#001236;color:#fff;border-color:#001236;}
+  #tab-inep.on{background:#009999;border-color:#009999;}
+  .pane{display:none;}
+  .pane.on{display:block;}
+  .pane .kpis{margin-top:0;}
+  .pane-inep .secao .num{background:#009999;}
+  .pane-inep .tabela th{background:#009999;}
+  .pane-inep .passo .n{background:#009999;}
+  footer{margin-top:46px;padding-top:18px;border-top:1px solid var(--borda);font-size:12px;color:var(--cinza);}
+  @media(max-width:760px){.kpis,.grid2,.obs{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<header>
+  <h1>DemandA · Observatório de Demanda Profissional e Formação</h1>
+  <p class="sub">Formação Superior (INEP, Censo 2021–2024) × Demanda Profissional (Novo CAGED, jan/2021–ago/2026) — <b>Integrado · INEP · CAGED</b>: três lentes, um painel</p>
+  <p class="meta">MBA Data Engineering &amp; Analytics · Fernanda Carnevalle de Melo · 30/10/2026 · Fontes: gold INEP v2 + silver/gold CAGED · EDA segundo Bussab &amp; Morettin (2010)</p>
+</header>
+<div class="container">
+
+<div class="tabs">
+  <button class="tab on" id="tab-integrado" onclick="showTab('integrado')">Integrado — Formação × Demanda</button>
+  <button class="tab" id="tab-inep" onclick="showTab('inep')">INEP — Formação Superior</button>
+  <button class="tab" id="tab-caged" onclick="showTab('caged')">CAGED — Demanda Profissional</button>
+</div>
+
+<div class="pane on" id="pane-integrado">
+
+<div class="kpis">
+  <div class="kpi"><div class="tt">Admissões · 2024</div><div class="v">25,3 mi</div><div class="t">admissões no mercado formal em 2024 — o mercado contratou 25 milhões de vezes num ano</div></div>
+  <div class="kpi"><div class="tt">Formandos · 2024</div><div class="v vg">1,33 mi</div><div class="t">formandos da graduação em 2024 (INEP) — a cada 19 contratações, 1 é de um formado novo</div></div>
+  <div class="kpi"><div class="tt">Tensão de absorção</div><div class="v vl">18,4×</div><div class="t">contratações por formado (2024): cada concluinte “sustenta” 18 admissões — as vagas giram muito além da formação</div></div>
+  <div class="kpi"><div class="tt">Correlação INEP × CAGED</div><div class="v">0,98</div><div class="t">correlação UF×ano entre as duas bases (n=108), estável em todos os anos — as bases contam a mesma história</div></div>
+  <div class="kpi"><div class="tt">Ingresso EaD · 2024</div><div class="v vl">66,8%</div><div class="t">dos ingressantes de 2024 estão no Ensino a Distância — a mão de obra do futuro é formada majoritariamente on-line</div></div>
+  <div class="kpi"><div class="tt">Saldo formal · 2021→24</div><div class="v vv">−41%</div><div class="t">saldo formal (admissões − desligamentos) de 2021 a 2024: a criação líquida de vagas caiu quase pela metade</div></div>
+</div>
+
+<h2 class="secao"><span class="num">1</span> As bases e suas granularidades — quem enxerga o quê</h2>
+<p class="abre">Antes de qualquer número, é preciso saber <b>com que lente cada base fotografa a realidade</b>. O CAGED é um contador mensal de portaria (cada contratação e demissão vira registro); o Censo do INEP é uma fotografia anual da formação (um retrato do ano letivo). Cruzar as duas exige a regra de coerência abaixo.</p>
+<div class="card">
+  <table class="tabela">
+    <tr><th>Granularidade</th><th>Onde existe</th><th>O que revela</th><th>Impacto no modelo</th></tr>
+    <tr><td><b>Mês</b></td><td>só CAGED (68 meses)</td><td>o pulso do mercado: pico de contratação em fev–mar, vale em dezembro</td><td>é o <b>alvo</b> do modelo: prever admissões por mês</td></tr>
+    <tr><td><b>Semestre</b></td><td>só CAGED (11 completos + 1 parcial)</td><td>a soma S1+S2 fecha exatamente o ano (verificado, diferença zero)</td><td>agregação interna de conferência; semestres INEP não existem</td></tr>
+    <tr><td><b>Ano</b></td><td><b>CAGED × INEP</b></td><td>a única ponte entre as bases: contratações do ano × formandos do ano</td><td>é onde as features de formação se conectam à demanda</td></tr>
+    <tr><td><b>UF × ano</b></td><td>ambas (27 UFs)</td><td>o painel com n=108 observações pareadas</td><td> dá poder estatístico e estratificação por estado</td></tr>
+  </table>
+  <div class="importa"><b>Isso é importante porque…</b> comparar mês com ano (ou dividir o Censo em semestres) é comparar fotos tiradas com lentes diferentes — o número parece certo, mas está errado por construção. Toda comparação INEP×CAGED deste dashboard está no nível <b>ano</b>; mês e semestre são detalhes internos do CAGED.</div>
+  <div class="destaque"><b>Defasagem estrutural:</b> o formando cola grau em dezembro e chega ao mercado no raiar do ano seguinte. Por isso, toda feature INEP entra no modelo com <b>no mínimo 1 ano de atraso</b> — usar a formação do próprio ano seria olhar o dado do futuro (vazamento), que infla a nota do ensaio e quebra em produção.</div>
+</div>
+
+<h2 class="secao"><span class="num">2</span> Panorama integrado — formação crescendo, absorção líquida caindo</h2>
+<p class="abre">Tudo abaixo está no índice 2021 = 100, para que séries de tamanhos diferentes (25 milhões de contratações vs 1,3 milhão de formandos) possam ser lidas juntas: o que importa é <b>quem cresceu mais rápido que quem</b>.</p>
+<div class="grafico">
+  <h4>Crescimento relativo desde 2021 (índice 100 = ano-base 2021)</h4>
+  <p class="exp">Rótulos = valor do índice em cada ano (todas as linhas partem de 100 no ano-base 2021, por isso o primeiro ponto não tem rótulo). Navy = CAGED; teal = INEP; rosa = saldo formal (admissões − desligamentos).</p>
+  <div id="chart-index"></div>
+</div>
+<div class="importa"><b>Isso é importante porque…</b> a leitura de negócio é direta: a <b>oferta de formação cresce mais rápido (ingressantes +27%) do que a capacidade do mercado de absorver em saldo (−41%)</b>. O mercado formal não parou de contratar — 25,3 milhões de admissões em 2024, recorde da série — mas quase tudo é <b>reposição de giro</b> (contratar de novo quem saiu), não criação de vaga nova. Para o modelo: demanda futura depende tanto do giro (curto prazo) quanto da formação que alimentará esse giro (longo prazo).</div>
+<div class="grid2" style="grid-template-columns:1fr;">
+  <div class="grafico">
+    <h4>Tensão de absorção: contratações do ano ÷ formandos do ano anterior</h4>
+    <p class="exp"><b>Como a conta é feita:</b> todas as admissões do mercado formal no ano (2024: 25,34 milhões) ÷ total de concluintes da graduação do ano anterior (2023: 1,37 milhão) = 18,4. <b>Não são “18 vagas por formando”</b>: quase todas essas contratações vão para quem já tem experiência — o número diz que o formado novo entra numa fila 18 vezes maior que a sua turma.</p>
+    <div id="chart-concl"></div>
+    <p class="exp" style="margin-top:6px"><b>Como ler este número:</b> 16,8 (2022) → 18,4 (2024) contratações para cada formado do ano anterior. Não significa que 18 pessoas foram contratadas “no lugar” de cada formando — uma mesma pessoa pode ser admitida mais de uma vez no ano, e a maioria das contratações repõe quem saiu. O número mede a <b>proporção entre giro e formação nova</b>: quanto mais alto, mais o mercado depende de reposição de gente e menos da entrada de mão de obra recém-formada. O formado é gota; o giro é o oceano.</p>
+  </div>
+  <div class="grafico">
+    <h4>A assinatura de janeiro: onde a formação encontra o mercado</h4>
+    <p class="exp"><b>Sim, é só janeiro — um janeiro por ano:</b> para cada ano, o gráfico mostra o peso DAQUELE janeiro no total DAQUELE ano (ex. 2024: 2,07 milhões de admissões em janeiro ÷ 25,34 milhões no ano = 8,16%). Um calendário “neutro” daria 8,33% a cada mês (1/12 — linha tracejada).</p>
+    <div id="chart-jan"></div>
+    <p class="exp" style="margin-top:6px">O peso de janeiro cresce em todos os anos (7,87% → 8,63%) e <b>cruza a linha do “mês neutro” em 2025</b>: os concluintes que colam grau em dezembro batem à porta do mercado no início do ano seguinte — validação do atraso de 1 ano das features INEP.</p>
+  </div>
+</div>
+
+<h2 class="secao"><span class="num">3</span> Retratos de 2024 — quem forma, quem contrata, quem demite</h2>
+<p class="abre">Antes de cruzar as bases, os retratos básicos de 2024: os cinco campos que mais entregam formandos ao mercado e os cinco grupos de ocupação que mais contratam e demitem — incluindo a pergunta óbvia que ninguém faz: <b>são os mesmos?</b></p>
+<div class="grid2" style="grid-template-columns:1fr;">
+  <div class="grafico">
+    <h4>Top 5 campos que mais formam (concluintes INEP 2024)</h4>
+    <p class="exp">Pedagogia lidera com folga: 103,4 mil formandos — os 5 maiores campos respondem por quase 30% de todos os concluintes do país.</p>
+    <div id="chart-form"></div>
+  </div>
+  <div class="grafico">
+    <h4>Top 5 grupos que contratam × demitem (CBO 2024)</h4>
+    <p class="exp">Navy = admissões; rosa = desligamentos (em milhões). Juntos, esses 5 grupos somam 9,7 mi de contratações — 38% do país.</p>
+    <div id="chart-gbo"></div>
+  </div>
+</div>
+<div class="card">
+  <h3>São os mesmos grupos que contratam e demitem? Sim — exatamente os mesmos cinco</h3>
+  <p style="font-size:13.5px">Varejo (521), limpeza (514), escritório (411), alimentação (513) e linha de produção (784) lideram <b>os dois rankings, na mesma ordem</b>: cada um gira entre 1,2 e 2,8 milhões de admissões e desligamentos por ano — <b>38% de todas as contratações do país em apenas cinco grupos</b>.</p>
+  <div class="importa"><b>Isso é importante porque…</b> contratar muito e demitir muito ao mesmo tempo é a assinatura da <b>rotatividade</b>: vagas que abrem e fecham o ano todo, de baixa barreira de entrada (Davis, Haltiwanger &amp; Schuh, 1996). E aqui está o descompasso central do projeto: <b>nenhum desses cinco grupos exige diploma</b>, enquanto os cinco maiores cursos do país formam Pedagogia, Direito, Administração… — ou seja, <b>a formação top não abastece os postos que mais giram</b>. A demanda volumosa está em serviços; a formação está em profissões reguladas. Para o modelo, é a prova concreta de que features de formação só explicam demanda onde existe ponte curso→ocupação — e reforça a prioridade do crosswalk (Seção 7, passo 1).</div>
+  <div class="destaque"><b>Nota de qualidade do dado (transparência):</b> o CBO 514-320 “Faxineiro” está marcado como <i>desativado em 2010</i> na classificação oficial e ainda responde por 1,27 milhão de admissões em 2024 — os registros chegam com código legado na fonte. Não invalida a análise por grupo, mas é um artefato que o pipeline deve endereçar.</div>
+</div>
+
+<h2 class="secao"><span class="num">4</span> O que já podemos observar — em português de negócio</h2>
+<p class="abre">Seis leituras que já saem dos dados cruzados, cada uma com o “e daí?” respondido.</p>
+<div class="obs">
+  <div class="card">
+    <h3>Saúde: formandos não dão conta do giro <span class="tag">Enfermagem × CBO 223</span></h3>
+    <div id="chart-enf"></div>
+    <p style="font-size:13px;margin-top:8px">Em 2024 formaram-se <b>54,5 mil em Enfermagem</b> — e o mercado contratou <b>208,9 mil profissionais de saúde de nível superior</b>, desligando 184,7 mil. <b>Se todos os formandos de Enfermagem entrassem amanhã no mercado, cobririam apenas ~1 em cada 4 contratações da área</b> — e quase 9 de cada 10 contratações de saúde servem para <b>repôr quem saiu</b>, não para abrir vaga nova.</p>
+    <div class="importa" style="margin-bottom:0"><b>Isso é importante porque…</b> planejar contratação e retenção em saúde olhando só a formação erra feio: a demanda por enfermagem é fenômeno de <b>rotatividade</b>, não de formação.</div>
+  </div>
+  <div class="card">
+    <h3>Educação: nem o maior curso do país forma gente suficiente <span class="tag">Pedagogia × professores</span></h3>
+    <div id="chart-prof"></div>
+    <p style="font-size:13px;margin-top:8px">Pedagogia é o maior campo de formação do Brasil — <b>103,4 mil concluintes em 2024</b> (à frente de Direito, 98,3 mil). As redes contrataram <b>145,4 mil professores</b> no mesmo ano (CBO 231–232) — e desligaram 142,6 mil: <b>1,4 contratação por formando</b>, num quadro que quase não cresce (as contratações são quase totalmente reposição).</p>
+    <div class="importa" style="margin-bottom:0"><b>Isso é importante porque…</b> o gargalo do magistério não se resolve formando mais gente em sala de aula: é <b>giro + evasão da carreira</b>. Prever demanda de professores exige modelar a saída (desligamentos), não só a entrada (formação).</div>
+  </div>
+  <div class="card">
+    <h3>TIC: a demanda que gira rápido e paga melhor <span class="tag">Sistemas de Informação × CBO 212</span></h3>
+    <div id="chart-tic"></div>
+    <p style="font-size:13px;margin-top:8px">Em 2024 formaram-se <b>61,8 mil em Sistemas de Informação</b> — e o mercado contratou <b>139,6 mil profissionais de TIC de nível superior</b> (CBO 212: desenvolvimento, suporte, redes, segurança, banco de dados, testes), desligando 125,7 mil. São <b>2,3 contratações por formando</b> — contra 1,4 da Pedagogia e 0,2 do Direito (23,2 mil advogados contratados para 98,3 mil formandos): <b>a melhor conversão formação→contratação entre os grandes campos formadores</b>.</p>
+    <div id="chart-tic-sal"></div>
+    <p style="font-size:13px;margin-top:8px"><b>E a vaga é a que melhor paga:</b> mediana de <b>R$ 5.200 na admissão</b> — <b>3 vezes</b> a mediana do mercado formal (R$ 1.741), 32% acima da saúde superior (R$ 3.950) e 2,5 vezes a dos professores (R$ 2.109). <b>Como giram:</b> 9 de cada 10 contratações de TIC repõem quem saiu (125,7 mil desligamentos para 139,6 mil admissões) — o mesmo padrão de rotatividade dos outros grandes grupos, mas aqui cada giro vale mais. E o giro é volátil: as contratações caíram <b>25% desde o pico de 2021</b> (187 mil) enquanto o mercado geral crescia 28% — o surto de contratação remota da pandemia normalizou; o nível segue alto.</p>
+    <div class="importa" style="margin-bottom:0"><b>Isso é importante porque…</b> TIC é o único grande campo onde a formação chega perto de abastecer a demanda, com a <b>ponte curso→ocupação mais limpa</b> (Sistemas de Informação → CBO 212) — e ainda por cima com o <b>maior salário de entrada</b> da comparação. Para o modelo, é o caso de uso mais direto do crosswalk CINE×CBO (Seção 7, passo 1); para o negócio, é onde cada formando rende mais em contratação <i>e</i> em salário.</div>
+    <div class="destaque"><b>Nota de transparência:</b> o comparador de Enfermagem (CBO 223) cobre <i>todos</i> os profissionais de saúde de nível superior — por isso seu 3,8×; o grupo 212 é <i>100% específico de TIC</i>, tornando o 2,3× uma conversão direta curso→ocupação. Salários: mediana das admissões de 2024, com filtro de qualidade R$ 1–50 mil (mesmo critério da EDA CAGED).</div>
+  </div>
+  <div class="card">
+    <h3>Mesma quantidade de formação, demanda diferente <span class="tag">o que a conta usa: TODA a formação do estado</span></h3>
+    <p style="font-size:13px">Não é um curso específico: a conta soma <b>toda</b> a formação superior do estado (todas as matrículas do INEP, todos os campos) e divide por <b>todas</b> as contratações daquele estado no CAGED. Exemplo: SC tem 459,5 mil matriculados e contratou 1,67 milhão → 3,64; o RJ tem <b>o dobro</b> de matriculados (944,8 mil) e contratou <b>o mesmo</b> (1,66 milhão) → 1,76.</p>
+    <div id="chart-uf"></div>
+    <p style="font-size:13px;margin-top:6px">Santa Catarina converte <b>3,64 contratações por aluno matriculado</b>; o Rio de Janeiro, apenas <b>1,76</b> — diferença de 2× no mesmo país (linha tracejada = média Brasil, 2,47).</p>
+    <div class="importa" style="margin-bottom:0"><b>Isso é importante porque…</b> a correlação de 0,98 entre as bases é majoritariamente <b>tamanho</b> (SP é grande em tudo). O sinal de verdade está nessa razão: economia dinâmica × estagnada, mercado formal × informal. É esse resíduo que o modelo precisa aprender — e é por isso que ele será estratificado por UF.</div>
+  </div>
+  <div class="card">
+    <h3>A revolução silenciosa do EaD <span class="tag">composição do canal</span></h3>
+    <div id="chart-ead"></div>
+    <p style="font-size:13px;margin-top:6px">Em 2024, <b>2 de cada 3 novos alunos</b> (66,8%) ingressaram a distância — e o estoque já passou da metade (50,7%).</p>
+    <div class="importa" style="margin-bottom:0"><b>Isso é importante porque…</b> a mão de obra que o CAGED vai registrar daqui a 3–5 anos está sendo formada majoritariamente <b>fora do campus</b> — isso muda quem se forma (mais adultos já trabalhando), onde (menos vínculo com a cidade universitária) e em que ritmo o formando chega ao mercado.</div>
+  </div>
+</div>
+<div class="card">
+  <h3>E os maiores campos de formação, lado a lado (concluintes 2024)</h3>
+  <table class="tabela">
+    <tr><th>Campo (CINE)</th><th class="num">Concluintes 2024</th><th>Leitura de negócio</th></tr>
+    <tr><td>Pedagogia</td><td class="num">103.447</td><td>maior fábrica de formandos — abastece o magistério, que mesmo assim contrata 1,4× mais</td></tr>
+    <tr><td>Direito</td><td class="num">98.326</td><td>formação forte, mas carreira regulada — formado não vira vaga automática</td></tr>
+    <tr><td>Administração</td><td class="num">76.889</td><td>campo generalista — irriga quase todos os setores, não uma ocupação única</td></tr>
+    <tr><td>Sistemas de Informação</td><td class="num">61.777</td><td>demanda de TIC gira rápido e paga melhor — melhor conversão formação→contratação</td></tr>
+    <tr><td>Enfermagem</td><td class="num">54.476</td><td>demanda altíssima, formação insuficiente para o giro (3,8×)</td></tr>
+  </table>
+</div>
+
+<h2 class="secao"><span class="num">5</span> As features escolhidas para o modelo — e por quê</h2>
+<p class="abre">O modelo vai prever <b>admissões CAGED mensais por UF × grupo ocupacional (CBO)</b> — o grão-alvo definido no escopo do projeto. As features abaixo foram validadas nas EDAs com evidência e justificativa bibliográfica. Tradução: cada linha diz o que a variável é na prática, por que ajuda, e de quem é a teoria por trás.</p>
+<div class="grid2">
+  <div class="card">
+    <h3>Família 1 — Giro (curto prazo, mensal, vem do CAGED)</h3>
+    <div class="feat"><span class="fn">admissoes_lag_1m/3m/6m/12m + médias móveis</span>
+      <div class="fp">“Como estava a contratação nos últimos meses?”</div>
+      <div class="pq"><b>Por quê:</b> a série tem memória — o mês atual herda o ritmo dos anteriores, e o lag de 12 meses carrega o calendário do ano passado. É a base de qualquer previsão de série temporal.</div>
+      <div class="ref">Box &amp; Jenkins (1970) · Hyndman &amp; Athanasopoulos (2018)</div></div>
+    <div class="feat"><span class="fn">desligamentos_lag_1m</span>
+      <div class="fp">“Quanta gente saiu de emprego no mês passado?”</div>
+      <div class="pq"><b>Por quê:</b> mercados que demetem hoje contratam amanhã — demissão e contratação são faces do mesmo processo de realocação (correlação com admissão futura: 0,69).</div>
+      <div class="ref">Davis, Haltiwanger &amp; Schuh (1996) · Mortensen &amp; Pissarides (1994)</div></div>
+    <div class="feat"><span class="fn">salario_lag_1m</span>
+      <div class="fp">“Qual o salário típico das contratações recentes?”</div>
+      <div class="pq"><b>Por quê:</b> salário é o preço do trabalho — quando sobe, sinaliza escassez de mão de obra e antecipa mais movimentação. Subiu 24,6% entre 2021 e 2024.</div>
+      <div class="ref">Hamermesh (1993)</div></div>
+    <div class="feat"><span class="fn">saldo_lag_1m</span>
+      <div class="fp">“O mercado estava expandindo ou encolhendo?”</div>
+      <div class="pq"><b>Por quê:</b> funciona como freio cíclico — saldo alto num mês antecede desaceleração no seguinte (correlação −0,37). É o “acelerador” do modelo.</div>
+      <div class="ref">Granger (1969)</div></div>
+    <div class="feat"><span class="fn">mes_sin / mes_cos</span>
+      <div class="fp">“Em que mês do ano estamos?” — em versão matemática</div>
+      <div class="pq"><b>Por quê:</b> a sazonalidade (pico fev–mar, vale dez) é estrutura econômica real, não ruído — entra no modelo explicitamente.</div>
+      <div class="ref">Miron (1996)</div></div>
+  </div>
+  <div class="card">
+    <h3>Família 2 — Formação (longo prazo, anual, vem do INEP)</h3>
+    <div class="feat"><span class="fn">concluintes_cine (lag 1–3 anos)</span>
+      <div class="fp">“Quantos formandos em cada campo (CINE) e estado, 1 a 3 anos atrás?”</div>
+      <div class="pq"><b>Por quê:</b> formandos são o fluxo que renova o estoque de qualificação do país — a mão de obra disponível amanhã. É a variável de melhor correlação com a demanda (0,99 no painel UF×ano) e entra com atraso de 1 ano.</div>
+      <div class="ref">Becker (1964) · Mincer (1974)</div></div>
+    <div class="feat"><span class="fn">matriculas_cine (lag 1 ano)</span>
+      <div class="fp">“Quantos alunos estão estudando cada campo hoje?”</div>
+      <div class="pq"><b>Por quê:</b> o estoque de matriculados é capital humano em formação — antecipa formandos futuros e dimensiona a oferta de 2 a 4 anos à frente.</div>
+      <div class="ref">Becker (1964)</div></div>
+    <div class="feat"><span class="fn">ingressantes_cine (lag 3–5 anos)</span>
+      <div class="fp">“Quantos entraram na faculdade a 3–5 anos atrás?”</div>
+      <div class="pq"><b>Por quê:</b> é o pipeline — quem ingressou em 2021 em cursos de 4 anos conclui em 2024/25. Sinal de longo prazo da oferta.</div>
+      <div class="ref">Horizonte típico de duração de curso (INEP)</div></div>
+    <div class="feat"><span class="fn">share_ead_uf</span>
+      <div class="fp">“Que fração da formação do estado é a distância?”</div>
+      <div class="pq"><b>Por quê:</b> muda o custo e a escala da formação — sinal estrutural de como e onde a mão de obra será formada (66,8% dos ingressantes).</div>
+      <div class="ref">Evidência documentada na EDA INEP</div></div>
+    <div class="feat"><span class="fn">adm_por_matricula (CAGED×INEP)</span>
+      <div class="fp">“Conversão do território: contratações por aluno matriculado”</div>
+      <div class="pq"><b>Por quê:</b> razões neutralizam o efeito-tamanho e expõem a dinâmica relativa — SC 3,64 vs RJ 1,76. Captura a eficiência de conversão formação→demanda do estado.</div>
+      <div class="ref">Wooldridge (2010)</div></div>
+    <div class="feat"><span class="fn">inscritos_por_vaga</span>
+      <div class="fp">“Quantos candidatos disputam cada vaga de faculdade?”</div>
+      <div class="pq"><b>Por quê:</b> pressão de demanda reprimida — disputa subindo 18% (1,45→1,71) antecipa movimentação de procura por formação e emprego.</div>
+      <div class="ref">Sinal de escassez (microeconomia da educação)</div></div>
+  </div>
+</div>
+<div class="card">
+  <h3>Regras de ouro do modelo (o “guarda-chuva” das features)</h3>
+  <table class="tabela">
+    <tr><th>Regra</th><th>Tradução para o negócio</th></tr>
+    <tr><td><b>Log das variáveis</b></td><td>os números variam em ordens de grandeza (Pedagogia tem 887 mil matrículas, metade dos campos tem menos de 2,3 mil) — o log coloca tudo na mesma “régua de crescimento”</td></tr>
+    <tr><td><b>Uma medida por conceito</b></td><td>variáveis gêmeas (correlação 0,93–0,98) não entram juntas: o modelo não consegue separar o crédito de uma da outra e o resultado fica instável</td></tr>
+    <tr><td><b>Sem vazamento</b></td><td>features INEP sempre com atraso ≥ 1 ano; features CAGED só defasadas — nunca alimentar o treino com dado do futuro</td></tr>
+    <tr><td><b>Validação na ordem do tempo</b></td><td>janela expansiva (treina com o passado, testa no futuro, sempre por UF) — como o mundo real funciona</td></tr>
+    <tr><td><b>Estratificação por UF</b></td><td>SP sozinho é 23,9% do país; médias nacionais escondem a diversidade (SC 3,64 × RJ 1,76)</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h3>Prévia: as métricas que vão julgar o modelo — o que são e por quê</h3>
+  <p style="font-size:13px;color:#5b6b7c;margin-bottom:8px">Todo modelo erra; a pergunta certa é <b>“erra quanto, e de que jeito?”</b>. Conforme o escopo do projeto final, três métricas comandam a avaliação dos modelos de <b>séries temporais</b> — aplicadas na <b>validação temporal cruzada</b> (janela expansiva: treina com o passado, testa no futuro, sempre na ordem do tempo), reportadas por <b>UF × grupo ocupacional (CBO)</b> e <b>registradas no MLflow</b>, onde cada experimento fica versionado e comparável:</p>
+  <table class="tabela">
+    <tr><th>Métrica</th><th>Significado em negócio</th><th>Por que adotamos</th></tr>
+    <tr><td><b>MAE</b><br>erro absoluto médio</td><td>“na média, o modelo erra X contratações por mês” — na mesma unidade do alvo</td><td>é o número que se reporta ao negócio: direto, sem transformação, sem inflacionar erros raros</td></tr>
+    <tr><td><b>MAPE</b><br>erro percentual absoluto médio</td><td>“na média, o modelo erra Y% do valor real”</td><td>erros em % tornam estados de tamanhos diferentes comparáveis — SP e Roraima no mesmo critério</td></tr>
+    <tr><td><b>RMSE</b><br>raiz do erro quadrático médio</td><td>“erro típico”, castigando os meses de erro grande</td><td>guarda-chuva contra falhas graves: um modelo pode ter MAE bom e ainda assim errar feio num mês crítico (dezembro) — o RMSE expõe isso</td></tr>
+    <tr><td colspan="3" style="background:#faf0f9"><b>As que NÃO usamos, e por quê:</b> <b>MSE</b> — erro em “contratações ao quadrado”, nenhuma leitura prática; <b>R²</b> — mede explicação de uma regressão estática, não qualidade de previsão no tempo, e não é comparável entre UFs; <b>acurácia/precisão/recall</b> — valem para classificação, mas aqui o alvo é um número (regressão); <b>SMAPE</b> — variação “simétrica” do MAPE, menos difundida e menos interpretável — adotamos o padrão de mercado (MAPE). E a regra de ouro: <b>decisão de modelo nunca se toma numa métrica só</b> — MAE + MAPE + RMSE juntas, na janela expansiva.</td></tr>
+  </table>
+</div>
+
+<h2 class="secao"><span class="num">6</span> Do estatistiquês ao português de negócio</h2>
+<p class="abre">Como ler os números técnicos que sustentam este dashboard — sem precisar de dicionário.</p>
+<div class="card">
+  <table class="tabela">
+    <tr><th>O termo técnico</th><th>Tradução</th></tr>
+    <tr><td><b>Distribuição log-normal, CV de 305%</b></td><td>“poucos gigantes, muita cauda”: Pedagogia e Direito concentram enorme fatia da formação; por isso usamos mediana e log, não média simples</td></tr>
+    <tr><td><b>Correlação de 0,98 (n=108, UF×ano)</b></td><td>as duas bases batem entre si com estabilidade de relógio — mas grande parte é efeito tamanho (estado grande é grande em tudo); o sinal de verdade está nas razões</td></tr>
+    <tr><td><b>Multicolinearidade</b></td><td>variáveis gêmeas que contam a mesma história — manter as duas juntas embaralha a causa</td></tr>
+    <tr><td><b>Vazamento (leakage)</b></td><td>usar informação do futuro no treino: nota excelente no ensaio, desastre em produção</td></tr>
+    <tr><td><b>Validação com janela expansiva</b></td><td>simular o uso real: treinar com jan/2021–dez/2023, prever 2024, depois ampliar e prever 2025 — sempre na ordem do tempo</td></tr>
+    <tr><td><b>Precedência de Granger ≠ causalidade</b></td><td>“A antes de B” valida sinal preditivo, não prova que A causa B — a linguagem da defesa deve ser precisa</td></tr>
+    <tr><td><b>Semestre parcial 2026S2</b></td><td>o semestre jul–ago/2026 está incompleto na fonte e fica fora de toda comparação — transparência antes de maquiagem</td></tr>
+  </table>
+</div>
+
+<h2 class="secao"><span class="num">7</span> Próximos passos — o que são e por que são recomendados</h2>
+<p class="abre">Cinco ações, em ordem de prioridade. Nenhuma é “por fazer bonito”: cada uma destrava uma capacidade que o modelo não tem hoje.</p>
+<div class="card">
+  <div class="passo"><div class="n">1</div><div class="tx"><h3>Materializar o crosswalk CINE×CBO (a tabela que liga curso → ocupação)</h3><p><b>O que é:</b> uma tabela de-para dizendo, para cada campo CINE (ex.: Enfermagem), quais ocupações CBO ele abastece (ex.: enfermeiro CBO 2231-05) — as dimensões já existem validadas (372 campos CINE, 2.778 CBOs); falta materializar o cruzamento. <b>Por quê:</b> hoje as features INEP chegam ao modelo por estado e área; com o crosswalk, passamos a prever demanda <b>por ocupação</b> — antecipar contratação de enfermeiros a partir dos concluintes de Enfermagem, como os exemplos da Seção 4 mostraram ser o pulo do gato. A literatura de mismatch (Quintini, 2011) sustenta: o match formação-ocupação é o que de fato determina absorção.</p></div></div>
+  <div class="passo"><div class="n">2</div><div class="tx"><h3>Treinar o modelo em duas camadas: baseline simples × challengers com features, tudo no MLflow</h3><p><b>O que é:</b> um SARIMA mensal (Statsmodels, só com o passado da própria série) como régua, e challengers com as 11 features da Seção 5 (LightGBM, com Prophet como alternativa — o stack definido no escopo), prevendo no grão <b>UF × grupo ocupacional (CBO)</b>. <b>Por quê:</b> o baseline prova se as features agregam valor mensurável — sem régua, qualquer número parece bom. A comparação é por MAE/MAPE com validação temporal cruzada (janela expansiva, na ordem do tempo — Tashman, 2000), e cada experimento é registrado e versionado no <b>MLflow</b> (rastreabilidade + Model Registry), como exige o objetivo específico do projeto final.</p></div></div>
+  <div class="passo"><div class="n">3</div><div class="tx"><h3>Testar a feature composta adm/matrícula por UF×área</h3><p><b>O que é:</b> usar a razão “contratações por aluno matriculado” como variável explicativa. <b>Por quê:</b> foi onde a EDA achou o resíduo mais informativo (SC 3,64 vs RJ 1,76) — mesma formação, demanda diferente. É o primeiro teste se o modelo consegue capturar a “eficiência de conversão” de cada território.</p></div></div>
+  <div class="passo"><div class="n">4</div><div class="tx"><h3>Ingerir o Censo 2025 quando publicado</h3><p><b>O que é:</b> adicionar o quinto ano de INEP à série. <b>Por quê:</b> com 4 anos, correlações ano a ano não têm valor de teste (n=4); o quinto ano dobra a robustez das features de formação e permite verificar se a coerência entre as bases se mantém — ou se algo estrutural mudou.</p></div></div>
+  <div class="passo"><div class="n">5</div><div class="tx"><h3>Completar os de-paras e a oferta EaD na gold</h3><p><b>O que é:</b> criar as tabelas de tradução dos códigos (rede, grau, modalidade estão como números-chave sem nome na gold) e incluir a oferta EaD nacional (dim 3, hoje só na silver). <b>Por quê:</b> sem nome legível, análise e dashboards dependem de decoreba de códigos; e 18,6 milhões de vagas de EaD invisíveis à gold é um pedaço enorme da história da formação fora do radar do modelo.</p></div></div>
+</div>
+</div>
+
+<div class="pane pane-inep" id="pane-inep">
+<div class="kpis">
+  <div class="kpi"><div class="tt">Matrículas · 2024</div><div class="v">10,2 mi</div><div class="t">estoque de formação em 2024 — +13,8% desde 2021: o sistema cresce</div></div>
+  <div class="kpi"><div class="tt">Ingressantes · 2024</div><div class="v vl">5,0 mi</div><div class="t">+27% desde 2021 — a entrada acelera (o motor do crescimento)</div></div>
+  <div class="kpi"><div class="tt">Concluintes · 2024</div><div class="v">1,33 mi</div><div class="t">+0,5% desde 2021 — a saída está estagnada: formam-se os mesmos 1,3 mi/ano</div></div>
+  <div class="kpi"><div class="tt">Estoque EaD</div><div class="v vl">50,7%</div><div class="t">das matrículas já são a distância — o EaD ultrapassou o presencial no estoque</div></div>
+  <div class="kpi"><div class="tt">Ingresso EaD</div><div class="v vl">66,8%</div><div class="t">2 de cada 3 novos alunos entram a distância — a transição acelera</div></div>
+  <div class="kpi"><div class="tt">Inscritos por vaga</div><div class="v vv">1,71</div><div class="t">disputa por vaga presencial subiu 18% (1,45 → 1,71) — aperto de oferta</div></div>
+</div>
+
+<h2 class="secao"><span class="num">1</span> A base e suas quatro dimensões — quem soma errado</h2>
+<p class="abre">O Censo fotografa <b>curso × município × IES</b> uma vez por ano. O risco desta base não é mês incompleto (como no CAGED) — é <b>dupla contagem de dimensões</b> e oferta que parece sumir.</p>
+<div class="card">
+  <table class="tabela">
+    <tr><th>Dim</th><th>Conteúdo</th><th>UF</th><th class="num">Vagas 2024</th></tr>
+    <tr><td><b>1</b></td><td>Presencial localizado</td><td>27 UFs</td><td class="num">5.075.146</td></tr>
+    <tr><td><b>2</b></td><td>EaD territorializado</td><td>tem UF</td><td class="num">~7 mil</td></tr>
+    <tr><td><b>3</b></td><td>EaD nacional</td><td>sem UF (por design)</td><td class="num">18.583.348</td></tr>
+    <tr><td><b>4</b></td><td>Sem localização</td><td>sem UF</td><td class="num">0</td></tr>
+  </table>
+  <div class="importa"><b>Isso é importante porque…</b> as regras da gold v2 foram validadas (diferenças silver×gold = 0 em todas as medidas e anos): <b>estudantes</b> = dimensões 1+2; <b>oferta</b> (cursos, vagas, inscritos) = <b>somente dimensão 1</b> (presencial). Somar <code>quantidade_vagas</code> da silver sem filtrar a dimensão é o erro clássico desta base.</div>
+  <div class="destaque"><b>A oferta que “some”:</b> as 18,6 milhões de vagas do EaD nacional (dimensão 3) existem <b>apenas na silver</b> — são 3,7× a oferta presencial e ficam invisíveis à gold. Qualquer análise de oferta total deve buscá-las lá; concluir que “o Brasil oferta poucas vagas” pela gold é falso por construção.</div>
+</div>
+
+<h2 class="secao"><span class="num">2</span> Evolução 2021→2024 — entrada acelerada, saída estagnada</h2>
+<p class="abre">No índice 2021 = 100, as quatro medidas principais contam a história: <b>o ingresso dispara, o estoque acompanha devagar, a formatura não sai do lugar — e a oferta presencial encolhe</b>.</p>
+<div class="grafico">
+  <h4>Crescimento relativo desde 2021 (índice 100 = ano-base)</h4>
+  <p class="exp">Rótulos = valor do índice em cada ano (todas as linhas partem de 100, por isso o primeiro ponto não tem rótulo). Teal = medidas de estudante; navy = concluintes; rosa = oferta presencial (contraindo). Vagas/inscritos = presencial (dim 1).</p>
+  <div id="chart-inep-index"></div>
+</div>
+<div class="importa"><b>Isso é importante porque…</b> o retrato é de <b>transição de modalidade com aperto de oferta presencial</b>: o estoque cresce +13,8%, mas as vagas presenciais caem 14,6% e a disputa por vaga sobe 18% — o motor do crescimento é o EaD. Para o modelo integrado com o CAGED: as duas modalidades precisam ser modeladas separadamente, porque o presencial encolhe e o EaD explode.</div>
+<div class="card">
+  <table class="tabela">
+    <tr><th>Indicador</th><th class="num">2021</th><th class="num">2024</th><th class="num">Variação</th><th>Leitura</th></tr>
+    <tr><td>Matrículas</td><td class="num">8.984.396</td><td class="num">10.224.686</td><td class="num"><b>+13,8%</b></td><td>expansão do estoque</td></tr>
+    <tr><td>Ingressantes</td><td class="num">3.943.733</td><td class="num">5.009.116</td><td class="num"><b>+27,0%</b></td><td>entrada acelerada</td></tr>
+    <tr><td>Concluintes</td><td class="num">1.326.961</td><td class="num">1.333.515</td><td class="num">+0,5%</td><td>saída estagnada</td></tr>
+    <tr><td>Vagas presenciais</td><td class="num">5.942.212</td><td class="num">5.075.146</td><td class="num"><b>−14,6%</b></td><td>contração da oferta</td></tr>
+    <tr><td>Inscritos por vaga pres.</td><td class="num">1,45</td><td class="num">1,71</td><td class="num">+18%</td><td>disputa crescendo</td></tr>
+  </table>
+</div>
+
+<h2 class="secao"><span class="num">3</span> A distribuição por campo — poucos gigantes, muita cauda</h2>
+<p class="abre">As 10,2 milhões de matrículas se espalham por 353 campos de formação — e a distribuição é <b>log-normal</b>: o tamanho dos campos multiplica, não soma.</p>
+<div class="card">
+  <table class="tabela">
+    <tr><th>Estatística (matrículas por campo, 2024)</th><th class="num">Valor</th><th>Tradução</th></tr>
+    <tr><td>Mínimo</td><td class="num">1</td><td>existem campos com uma única matrícula</td></tr>
+    <tr><td>Mediana</td><td class="num">2.327</td><td>metade dos campos é minúscula</td></tr>
+    <tr><td>Média</td><td class="num">28.965</td><td>12× a mediana — arrastada pelos gigantes</td></tr>
+    <tr><td>Máximo</td><td class="num">887.502</td><td>Pedagogia, sozinha, vale 8,7% de todas as matrículas</td></tr>
+    <tr><td><b>Coeficiente de variação</b></td><td class="num"><b>304,9%</b></td><td>concentração estrutural — <i>não</i> é “volatilidade”</td></tr>
+    <tr><td>Shapiro-Wilk bruto → log</td><td class="num">p 1,4e-33 → 0,073</td><td>rejeição violenta que <b>desaparece no log</b> = log-normal confirmada</td></tr>
+  </table>
+  <div class="importa"><b>Isso é importante porque…</b> a lição metodológica atravessa o projeto: (i) resumir por <b>mediana e quartis</b>, nunca por média; (ii) <b>modelar em log</b> — em bruto, qualquer correlação será dominada por Pedagogia/Direito/Administração; (iii) Spearman sempre como contraponto do Pearson. É a mesma disciplina do “semestre parcial” no CAGED: identificar o artefato antes de interpretar o número.</div>
+</div>
+<div class="grafico">
+  <h4>Top 8 campos por matrículas (2024)</h4>
+  <p class="exp">Teal = matrículas por campo CINE. Rótulos = matrículas em cada barra. Os 3 primeiros campos concentram quase um quarto de todas as matrículas do país.</p>
+  <div id="chart-campos"></div>
+</div>
+
+<h2 class="secao"><span class="num">4</span> O mapa por área — Saúde em alta, Engenharia em queda, TIC acelerando</h2>
+<p class="abre">Agregando os campos em áreas CINE gerais: onde a formação cresce e onde recua — o mapa que encontrará a demanda do CAGED.</p>
+<div class="grafico">
+  <h4>Variação de matrículas por área, 2021→2024</h4>
+  <p class="exp">Teal = crescimento; rosa = queda (as únicas grandes áreas em contração). Rótulos = variação % em cada barra.</p>
+  <div id="chart-areas"></div>
+</div>
+<div class="importa"><b>Isso é importante porque…</b> este é o mapa da <b>oferta de formação</b>: <b>Saúde cresce +25%</b> (alinhada à demanda de rotatividade que o CAGED mostra) e <b>Computação/TIC +15,3%</b> com share de ingressantes (9,8%) acima do estoque (7,8%) — entrada acelerando. <b>Engenharia é a única grande área em queda (−5,4%)</b>: se o mercado demandar engenharia/produção, há risco de gargalo de formação. Top-3 áreas (Negócios+Saúde+Educação) = <b>67% das matrículas</b>.</div>
+
+<h2 class="secao"><span class="num">5</span> A geografia da formação — SP concentra quase um quarto</h2>
+<p class="abre">A distribuição territorial é tão desigual quanto a de campos — e pelos mesmos motivos: população, renda e sede de IES.</p>
+<div class="grafico">
+  <h4>Share de matrículas por UF (2024, top 8)</h4>
+  <p class="exp">Teal = top UFs; rosa = São Paulo, o outlier (IQR e MAD concordam). Rótulos = share % do total nacional. Top-5 UFs = 55% das matrículas.</p>
+  <div id="chart-inep-uf"></div>
+</div>
+<div class="importa"><b>Isso é importante porque…</b> para o modelo integrado CAGED×INEP, a estratificação por UF é <b>obrigatória</b>: prever formação nacional e aplicar por estado introduziria viés grave a favor de SP (23,9% do país, outlier em IQR e MAD). A gold por UF já existe (<code>fato_inep_educacao_uf_anual</code>, 27 UFs) e é a base correta do join com o CAGED por UF.</div>
+
+<h2 class="secao"><span class="num">6</span> Relações bivariadas — medidas gêmeas e o par mais informativo</h2>
+<p class="abre">Com distribuição log-normal, toda divergência Pearson &lt; Spearman é sintoma de não-linearidade multiplicativa — e aqui a regra se confirmou em todos os pares com oferta.</p>
+<div class="card">
+  <table class="tabela">
+    <tr><th>Par (campo CINE, 2024, n=353)</th><th class="num">Pearson</th><th class="num">Spearman</th><th>Leitura</th></tr>
+    <tr><td>Matrículas × Ingressantes</td><td class="num">0,98</td><td class="num">0,98</td><td>estoque e entrada andam juntos</td></tr>
+    <tr><td>Matrículas × Concluintes</td><td class="num">0,98</td><td class="num">0,95</td><td>campos grandes formam mais</td></tr>
+    <tr><td>Vagas × Inscritos</td><td class="num">0,80</td><td class="num"><b>0,96</b></td><td><b>divergência forte: relação multiplicativa</b></td></tr>
+    <tr><td>Vagas × Ingressantes</td><td class="num">0,94</td><td class="num">0,97</td><td>divergência: log</td></tr>
+    <tr><td>Inscritos × Ingressantes</td><td class="num">0,89</td><td class="num">0,98</td><td>divergência: log</td></tr>
+  </table>
+  <div class="importa"><b>Isso é importante porque…</b> (1) <b>multicolinearidade estrutural</b>: matrículas, ingressantes e concluintes são quase a mesma variável em escalas diferentes (todas &gt; 0,93) — a solução é a mesma da EDA CAGED (admissões × desligamentos, 0,98): <b>uma medida por conceito</b> e derivar razões. (2) <b>Vagas × Inscritos é o par mais informativo</b>: Pearson 0,80 muito abaixo de Spearman 0,96 — campos grandes recebem proporcionalmente mais inscritos, e a razão inscritos/vaga é a medida de <b>escassez relativa</b> que interessa ao cruzamento com demanda.</div>
+</div>
+
+<h2 class="secao"><span class="num">7</span> A grande transição — presencial contrai, EaD explode</h2>
+<p class="abre">A mudança estrutural do período: o aluno migrou de canal. O fluxo de entrada já é majoritariamente digital; o estoque ainda não — a transição <b>acelera</b>.</p>
+<div class="grafico">
+  <h4>Participação do EaD em ingressantes e matrículas (2021–2024)</h4>
+  <p class="exp">Rosa = share EaD dos ingressantes (o fluxo); teal = share EaD das matrículas (o estoque). Rótulos = % em cada ano. A linha de cima (fluxo) lidera a de baixo (estoque): a transição acelera.</p>
+  <div id="chart-inep-ead"></div>
+</div>
+<div class="grid2">
+  <div class="card">
+    <h3>Matrículas: presencial −4,4% × EaD +39,7%</h3>
+    <p style="font-size:13.5px">Presencial: 5,27 → 5,04 mi. EaD: 3,71 → 5,19 mi — <b>o EaD ultrapassa o presencial no estoque em 2024</b> (50,7%).</p>
+  </div>
+  <div class="card">
+    <h3>Concluintes: presencial −13,4% × EaD +24,7%</h3>
+    <p style="font-size:13.5px">Presencial: 842 → 729 mil. EaD: 485 → 604 mil — <b>604 mil formandos EaD/ano</b> batendo à porta do mercado.</p>
+  </div>
+</div>
+<div class="importa"><b>Isso é importante porque…</b> o share de ingressantes EaD (66,8%) muito acima do share de matrículas (50,7%) diz que a transição <b>acelera</b>. Para o modelo de demanda profissional: os <b>concluintes que chegarão ao mercado de 2025 em diante são majoritariamente formados a distância</b> — se a formação do EaD difere do presencial por ocupação, a oferta de mão de obra por área muda de composição antes de mudar de volume.</div>
+<div class="destaque"><b>Caveat de leitura (transparência):</b> a queda de concluintes/ingressantes (33,7% → 26,6%) <b>não é taxa de evasão</b> — concluintes de 2024 majoritariamente ingressaram ~2020, antes da base; o boom de ingresso recente infla o denominador. Não interpretar como evasão crescente.</div>
+
+<h2 class="secao"><span class="num">8</span> Features para o modelo integrado (INEP → CAGED)</h2>
+<p class="abre">A EDA CAGED validou as exógenas de curto prazo (desligamentos e salário, r ≈ 0,68–0,69 com t+1); a base INEP traz as de <b>longo prazo</b> — concluintes de hoje são a oferta de mão de obra de 1–3 anos à frente. Todas defasadas, sem vazamento.</p>
+<div class="grid2">
+  <div class="card">
+    <div class="feat"><span class="fn">concluintes_cine_lag1..3a</span>
+      <div class="fp">“Quantos formandos em cada campo e estado, 1 a 3 anos atrás?”</div>
+      <div class="pq"><b>Por quê:</b> formandos são o fluxo que renova o estoque de qualificação — a mão de obra disponível amanhã.</div>
+      <div class="ref">Becker (1964) · Mincer (1974)</div></div>
+    <div class="feat"><span class="fn">ingressantes_cine_lag3..5a</span>
+      <div class="fp">“Quem entrou na faculdade a 3–5 anos?”</div>
+      <div class="pq"><b>Por quê:</b> é o pipeline — quem ingressou em 2021 em cursos de 4 anos conclui em 2024/25.</div>
+      <div class="ref">Horizonte típico de duração de curso (INEP)</div></div>
+    <div class="feat"><span class="fn">matriculas_cine_lag1a</span>
+      <div class="fp">“Qual o estoque de alunos por campo hoje?”</div>
+      <div class="pq"><b>Por quê:</b> capital humano em formação — dimensiona a oferta de 2 a 4 anos à frente.</div>
+      <div class="ref">Becker (1964)</div></div>
+  </div>
+  <div class="card">
+    <div class="feat"><span class="fn">share_ead_campo</span>
+      <div class="fp">“Que fração da formação do campo é a distância?”</div>
+      <div class="pq"><b>Por quê:</b> muda custo e escala da formação — sinal estrutural de como e onde a mão de obra será formada (66,8% dos ingressantes).</div>
+      <div class="ref">Evidência documentada nas Seções 5 e 7</div></div>
+    <div class="feat"><span class="fn">inscritos_por_vaga (presencial)</span>
+      <div class="fp">“Quantos candidatos disputam cada vaga do campo?”</div>
+      <div class="pq"><b>Por quê:</b> escassez relativa por área — sinal de atratividade e pressão (média nacional 1,45 → 1,71).</div>
+      <div class="ref">Seção 6 — par mais informativo</div></div>
+    <div class="feat"><span class="fn">Regras de integração com o CAGED</span>
+      <div class="fp">Ponte CINE×CBO (notebook 032) · defasagem mínima de 1 ano · estratificação por UF obrigatória (SP = 23,9%) · medidas sempre em log</div>
+      <div class="pq"><b>Por quê:</b> sem defasagem há vazamento (formação do próprio ano é dado do futuro); sem log, Pedagogia domina todas as correlações; sem UF, o viés de SP vira erro sistemático.</div>
+      <div class="ref">EDA CAGED · EDA INEP · escopo do projeto</div></div>
+  </div>
+</div>
+<div class="importa"><b>Isso é importante porque…</b> com o CAGED validando exógenas curtas e o INEP fornecendo as longas, o modelo ganha os dois horizontes que explicam demanda: <b>a rotatividade do mês</b> (CAGED) e <b>a formação de ontem</b> (INEP). É o argumento central do projeto — e a razão de as duas EDAs seguirem a mesma metodologia.</div>
+
+<div class="card">
+  <h3>Próximos passos (INEP)</h3>
+  <div class="passo"><div class="n">1</div><div class="tx"><h3>Materializar o join CINE×CBO em gold</h3><p><b>O que é:</b> a tabela que liga cada campo de formação às ocupações que abastece (notebook 032, dimensões já validadas). <b>Por quê:</b> é a ponte que falta entre esta EDA e a de demanda — sem ela, features de formação chegam ao modelo só por estado e área.</p></div></div>
+  <div class="passo"><div class="n">2</div><div class="tx"><h3>Levar a oferta EaD nacional à gold</h3><p><b>O que é:</b> tabela gold da dimensão 3 (18,6 mi de vagas, hoje só na silver). <b>Por quê:</b> um pedaço enorme da história da formação está invisível à camada analítica.</p></div></div>
+  <div class="passo"><div class="n">3</div><div class="tx"><h3>Criar os de-paras textuais na silver</h3><p><b>O que é:</b> nomes legíveis para tipo_rede (1=pública, 2=privada), grau acadêmico e nível acadêmico. <b>Por quê:</b> hoje análise depende de decoreba de códigos — e a rede privada ≈ 84% das matrículas, leitura relevante invisível.</p></div></div>
+  <div class="passo"><div class="n">4</div><div class="tx"><h3>Ingerir o Censo 2025 quando publicado</h3><p><b>O que é:</b> o quinto ano da série. <b>Por quê:</b> com 4 pontos anuais, STL/ADF/ACF não têm poder estatístico — a EDA é transversal por necessidade; o quinto ano começa a habilitar métodos de série temporal para a formação.</p></div></div>
+</div>
+</div>
+
+<div class="pane" id="pane-caged">
+<div class="kpis">
+  <div class="kpi"><div class="tt">Admissões · 2024</div><div class="v">25,3 mi</div><div class="t">admissões no mercado formal em 2024 — recorde da série de 68 meses</div></div>
+  <div class="kpi"><div class="tt">Tendência · 5 anos</div><div class="v vl">+46%</div><div class="t">crescimento da demanda por contratações de 2021 a 2026 (série mensal)</div></div>
+  <div class="kpi"><div class="tt">Salário de contratação</div><div class="v vl">+44%</div><div class="t">mediana de admissão: R$ 1.387 → R$ 2.000 — as vagas ganham remuneração, não só volume</div></div>
+  <div class="kpi"><div class="tt">Lei da rotatividade</div><div class="v">0,98</div><div class="t">correlação admissões × desligamentos: quem contrata mais, desliga mais — o giro domina o mercado</div></div>
+  <div class="kpi"><div class="tt">Alerta 2025S2</div><div class="v vv">42.982</div><div class="t">saldo do semestre (admissões − desligamentos) quase nulo — ponto de mudança a investigar</div></div>
+  <div class="kpi"><div class="tt">Volatilidade (CV)</div><div class="v">11,3%</div><div class="t">coeficiente de variação sem o semestre parcial: volatilidade moderada, não alta</div></div>
+</div>
+
+<h2 class="secao"><span class="num">1</span> A base — um contador mensal de portaria</h2>
+<p class="abre">O CAGED registra <b>cada contratação e cada demissão</b> do mercado formal, mês a mês. É a lente mais fina do projeto: 68 dos 72 meses esperados estão presentes — e o único buraco é conhecido.</p>
+<div class="card">
+  <table class="tabela">
+    <tr><th>Aspecto</th><th>Valor</th><th>Leitura de negócio</th></tr>
+    <tr><td><b>Cobertura</b></td><td>68 de 72 meses (~94%)</td><td>histórico contínuo de jan/2021 a ago/2026 — suficiente para tendência e sazonalidade</td></tr>
+    <tr><td><b>Semestres</b></td><td>12 (11 completos + 1 parcial)</td><td>S1+S2 fecha o ano com diferença zero (verificado) — agregação de conferência</td></tr>
+    <tr><td><b>Admissões</b></td><td>tipos 10, 20, 25, 35, 70, 97</td><td>a contagem usa os códigos oficiais de admissão do Novo CAGED</td></tr>
+    <tr><td><b>Desligamentos</b></td><td>tipos 31–98 (11 códigos)</td><td>contados na mesma varredura das admissões</td></tr>
+    <tr><td><b>Salário</b></td><td>mediana por admissão</td><td>mediana (não média) por ser robusta a extremos</td></tr>
+  </table>
+  <div class="importa"><b>Isso é importante porque…</b> o único mês faltante é previsível: <b>2026S2 é parcial</b> (jul–ago, 2 de 6 meses). Misturá-lo em médias ou modelos sem tratamento distorce a leitura de tendência — ele é justamente o ponto mais baixo da série. Para o modelo: <b>normalizar por mês ou excluir das comparações semestrais</b>.</div>
+  <div class="destaque"><b>A lição estatística da cobertura:</b> com os 12 semestres, o Shapiro-Wilk rejeita normalidade (p = 0,022) e o CV acusa “alta volatilidade” (21,2%). <b>Sem o parcial, a rejeição desaparece inteiramente</b> (p = 0,899) e o CV cai pela metade (11,3%). A “não-normalidade” e a “alta volatilidade” eram artefatos de cobertura, não propriedades do mercado de trabalho.</div>
+</div>
+
+<h2 class="secao"><span class="num">2</span> A série semestral — admissões crescendo, criação líquida caindo</h2>
+<p class="abre">Doze semestres em uma linha: o mercado <b>não parou de contratar</b> (admissões +46%), mas o <b>saldo</b> (admissões − desligamentos) encolhe — quase toda contratação hoje repõe quem saiu.</p>
+<div class="grafico">
+  <h4>Admissões, desligamentos e saldo por semestre (milhões)</h4>
+  <p class="exp">Navy = admissões; rosa = desligamentos; teal = saldo líquido. 26S2* é parcial (jul–ago). Rótulos = valor em milhões em cada ponto.</p>
+  <div id="chart-sem"></div>
+</div>
+<div class="importa"><b>Isso é importante porque…</b> as duas curvas de cima andam grudadas (correlação 0,98 — a lei da rotatividade): o volume de contratação é, na prática, volume de <b>reposição</b>. O saldo cai de 1,53 mi (2021S1) para 42.982 em 2025S2 — e é esse saldo, não o volume, que mede <b>criação de vaga nova</b>. Planejamento de capacidade olha o saldo; previsão de demanda olha o giro.</div>
+<div class="card">
+  <h3>Estatísticas da série — com e sem o semestre parcial</h3>
+  <table class="tabela">
+    <tr><th>Estatística</th><th class="num">12 semestres</th><th class="num">11 completos</th><th>Por que a diferença</th></tr>
+    <tr><td>Mínimo</td><td class="num">4,56 mi</td><td class="num">9,46 mi</td><td>o mínimo era o parcial</td></tr>
+    <tr><td>Mediana</td><td class="num">11,62 mi</td><td class="num">11,77 mi</td><td>estável — o típico não muda</td></tr>
+    <tr><td>Desvio-padrão</td><td class="num">±2,39 mi</td><td class="num">±1,34 mi</td><td>a dispersão era inflada pelo parcial</td></tr>
+    <tr><td><b>Coeficiente de variação</b></td><td class="num">21,23%</td><td class="num">11,26%</td><td>volatilidade alta era artefato</td></tr>
+    <tr><td>Assimetria</td><td class="num">−1,62</td><td class="num">−0,11</td><td>cauda esquerda desaparece</td></tr>
+    <tr><td>Shapiro-Wilk (p)</td><td class="num">0,022</td><td class="num">0,899</td><td>rejeição de normalidade some</td></tr>
+  </table>
+  <p style="font-size:12.5px;color:#5b6b7c;margin-top:8px">A coluna dos 12 permanece porque 2026S2 é dado real (jul–ago efetivamente ocorridos) — mas <b>toda comparação semestral usa a coluna da direita</b>.</p>
+</div>
+
+<h2 class="secao"><span class="num">3</span> Sazonalidade e salário — o calendário do mercado e o preço da vaga</h2>
+<p class="abre">Duas regularidades que todo planejador de contratação precisa saber de cor: <b>quando</b> o mercado contrata e <b>quanto</b> paga a vaga típica.</p>
+<div class="grafico">
+  <h4>O peso médio de cada mês no ano (anos completos 2021–2025)</h4>
+  <p class="exp">Peso do mês no total do ano, média dos 5 anos completos. Linha tracejada = “mês neutro” (1/12 = 8,33%). Fevereiro e agosto contratam acima da conta; dezembro despenca.</p>
+  <div id="chart-saz"></div>
+</div>
+<div class="grid2">
+  <div class="card">
+    <h3>Salário mediano de admissão: +44% sem sustos</h3>
+    <p style="font-size:13.5px">Progressão suave de <b>R$ 1.387 (2021S1)</b> a <b>R$ 2.000</b> na série — entre os 11 semestres completos, o máximo é R$ 1.961 (progressão de ~41%). É a variável com comportamento mais próximo da normal (Shapiro-Wilk p = 0,73).</p>
+    <div class="importa" style="margin-bottom:0"><b>Isso é importante porque…</b> o contraste define os papéis no modelo: <b>volume é volátil; remuneração é estável</b>. O salário não é distorcido nem pelo semestre parcial — a mediana por contratação (milhões de registros por mês) não sofre efeito de cobertura. Entra no modelo como exógena validada (correlação 0,68 com admissões do mês seguinte).</div>
+  </div>
+  <div class="card">
+    <h3>Idade mediana: 30–31 anos, estável</h3>
+    <p style="font-size:13.5px">A idade mediana de admissão variou <b>1 ano</b> em todo o período (30 a 31). O teste de normalidade “rejeita” — mas é <b>artefato da discretização</b> (a variável só assume dois valores), não anomalia de mercado.</p>
+    <div class="importa" style="margin-bottom:0"><b>Isso é importante porque…</b> é a lição de método que atravessa todo o projeto: <b>o teste estatístico aponta, o contexto decide</b>. Antes de tratar algo como outlier, pergunte se é erro de dado, evento real ou efeito de cobertura.</div>
+  </div>
+</div>
+
+<h2 class="secao"><span class="num">4</span> Outliers — dois métodos, uma conclusão</h2>
+<p class="abre">IQR (Tukey) e MAD aplicados às três variáveis — quando dois métodos robustos convergem, a classificação é confiável.</p>
+<div class="card">
+  <table class="tabela">
+    <tr><th>Variável</th><th class="num">Outliers IQR</th><th class="num">Outliers MAD</th><th>Diagnóstico</th></tr>
+    <tr><td>Admissões</td><td class="num">1 (8,3%)</td><td class="num">1 (8,3%)</td><td>2026S2 — efeito de cobertura, não erro</td></tr>
+    <tr><td>Salário</td><td class="num">0</td><td class="num">0</td><td>nenhuma anomalia</td></tr>
+    <tr><td>Idade</td><td class="num">3 (25%)</td><td class="num">0</td><td>falsos positivos da discretização (IQR degenerado de 0,25)</td></tr>
+  </table>
+  <div class="importa"><b>Isso é importante porque…</b> a contraprova é a prova: recalculados sem o parcial, <b>IQR e MAD retornam zero outliers</b>. A base silver <b>não tem erro de dado</b> — o único extremo é o semestre parcial, que entra na história como caso especial de cobertura, não como anomalia a remover.</div>
+</div>
+
+<h2 class="secao"><span class="num">5</span> A lei da rotatividade — correlações bivariadas</h2>
+<p class="abre">Pearson mede relação linear (sensível a extremos); Spearman mede relação monotônica qualquer. Divergência entre as duas é sintoma de não-linearidade ou outlier.</p>
+<div class="card">
+  <table class="tabela">
+    <tr><th>Par</th><th class="num">Pearson</th><th class="num">Spearman</th><th>Leitura de negócio</th></tr>
+    <tr><td>Admissões × Desligamentos</td><td class="num"><b>0,98</b></td><td class="num">0,96</td><td>lei da rotatividade: contratam e desligam juntos</td></tr>
+    <tr><td>Admissões × Salário</td><td class="num">0,02</td><td class="num">0,47</td><td>relação temporal (ambas sobem), não direta</td></tr>
+    <tr><td>Admissões × Saldo</td><td class="num">0,22</td><td class="num">—</td><td>saldo é resíduo quase colinear — indicador de ciclo, não feature de volume</td></tr>
+  </table>
+  <div class="importa"><b>Isso é importante porque…</b> as conclusões práticas saem direto da tabela: (1) <b>não usar admissões e desligamentos juntas</b> em modelo linear — multicolinearidade; (2) o desligamento defasado é o melhor <i>proxy</i> antecedente da admissão seguinte (0,69 em t+1); (3) o saldo serve como <b>termômetro de ciclo</b> isolado (ex.: alerta 2025S2).</div>
+</div>
+
+<h2 class="secao"><span class="num">6</span> Features validadas para o modelo — o pódio de t+1</h2>
+<p class="abre">A correlação com o valor corrente (t) mostra associação; a correlação com <b>t+1</b> é o teste de utilidade real: só features calculáveis <i>hoje</i> que se relacionam com o <i>próximo</i> mês antecipam de verdade. Todas calculadas sem vazamento de futuro.</p>
+<div class="grafico">
+  <h4>Correlação de cada feature com as admissões do mês seguinte (t+1)</h4>
+  <p class="exp">Navy = correlação positiva; rosa = o freio cíclico (saldo defasado, correlação negativa). Rótulos = valor de Pearson r em cada barra.</p>
+  <div id="chart-feat"></div>
+</div>
+<div class="importa"><b>Isso é importante porque…</b> o pódio de t+1 é revelador: <b>tendência (0,70), desligamentos do mês passado (0,69) e salário do mês passado (0,68)</b> — e o lag-1 da própria série (0,40) fica <b>atrás</b> das exógenas. A demanda não é pura inércia: empresas que desligam já reposicionam vagas, e remuneração em alta antecipa volume. O saldo defasado é negativo (−0,37): mês de contratação líquida forte antecede refluxo — sinal de <b>ciclo</b>. Nenhuma feature passa de 0,71: o modelo terá erro não-nulo, e isso é esperado — não é falha.</div>
+<div class="destaque"><b>Regra de ouro:</b> toda feature entra <b>defasada</b> — o modelo só vê informação que já existia no momento da previsão. Um modelo com vazamento parece excelente no treino e quebra em produção.</div>
+
+<h2 class="secao"><span class="num">7</span> Próximos passos (CAGED) — o que destrava cada capacidade</h2>
+<div class="card">
+  <div class="passo"><div class="n">1</div><div class="tx"><h3>Modelar a sazonalidade explicitamente</h3><p><b>O que é:</b> SARIMA/Prophet com dummies sazonais ou transformação log. <b>Por quê:</b> a série é não-estacionária (ADF p = 0,22) e dominada por sazonalidade + choque de 2021 — sem tratamento, o modelo “aprende” que sempre sobe.</p></div></div>
+  <div class="passo"><div class="n">2</div><div class="tx"><h3>Estratificar por UF e Seção CNAE</h3><p><b>O que é:</b> agregar a série por UF × semestre e Seção × semestre (a EDA atual é Brasil total). <b>Por quê:</b> a demanda nacional esconde regionalismos — e o modelo final do escopo prevê no grão UF × grupo ocupacional (CBO).</p></div></div>
+  <div class="passo"><div class="n">3</div><div class="tx"><h3>Investigar o ponto de mudança de 2025S2</h3><p><b>O que é:</b> saldo quase nulo (+42 mil) — investigar se é recessão real ou anomalia de coleta; testar detecção de mudança de regime. <b>Por quê:</b> um modelo treinado antes de uma quebra estrutural erra sistematicamente depois dela.</p></div></div>
+  <div class="passo"><div class="n">4</div><div class="tx"><h3>Levar as features mensais ao pipeline de treino (MLflow)</h3><p><b>O que é:</b> materializar os lags, médias móveis e exógenas defasadas da Seção 6 como tabela de treino versionada. <b>Por quê:</b> já validadas estatisticamente (todas as top-10 significativas, p &lt; 0,005), falta convertê-las em experimento rastreável — baseline SARIMA × challengers, MAE/MAPE com janela expansiva.</p></div></div>
+  <div class="passo"><div class="n">5</div><div class="tx"><h3>Completar 2026 quando set–dez forem ingeridos</h3><p><b>O que é:</b> fechar os 4 meses restantes do ano e revalidar. <b>Por quê:</b> encerra o artefato de cobertura de uma vez e dá ao modelo um sexto ano de calendário sazonal.</p></div></div>
+</div>
+</div>
+
+<footer>
+  <b>Fontes e procedência:</b> gold INEP v2 (`fato_inep_educacao_brasil_anual`, `fato_inep_educacao_uf_anual`) · silver CAGED (`novo_caged_movimentacoes`) + gold (`fato_caged_semestral`) · dimensões `dim_cine_brasil` e `dim_cbo_ocupacao` · números calculados em 30/10/2026 (painel UF×ano: join por sigla, n=108; correlações Pearson/Spearman com e sem log; exemplos ocupacionais: CBO 223 saúde superior, CBO 231–232 professores vs concluintes INEP 2024).<br>
+  <b>Metodologia:</b> EDA unificada segundo Bussab &amp; Morettin (2010) — detalhes, limites e bibliografia completa em `EDA_Unificada_Inep_Caged.md`. · DemandA — Dashboard Integrado · Fernanda Carnevalle de Melo · 2026
+</footer>
+</div>
+<script>
+function el(id){return document.getElementById(id)}
+function lineChart(id,cats,series,yMin,yMax,yTick,skipFirst){
+  var W=920,H=430,L=64,R=895,T=26,B=378,n=cats.length;
+  var X=function(i){return L+i*(R-L)/(n-1)};var Y=function(v){return T+(B-T)*(1-(v-yMin)/(yMax-yMin))};
+  var s='<svg viewBox="0 0 920 '+H+'">';
+  for(var k=0;k<=4;k++){var v=yMin+(yMax-yMin)*k/4;var gy=Y(v);s+='<line class="grid" x1="'+L+'" x2="'+R+'" y1="'+gy+'" y2="'+gy+'"/><text class="tick" x="'+(L-7)+'" y="'+(gy+4)+'" text-anchor="end">'+yTick(v)+'</text>';}
+  cats.forEach(function(c,i){s+='<text class="tick" x="'+X(i)+'" y="'+(B+18)+'" text-anchor="middle">'+c+'</text>'});
+  series.forEach(function(sr,si){
+    var pts=sr.v.map(function(v,i){return X(i).toFixed(1)+','+Y(v).toFixed(1)}).join(' ');
+    s+='<polyline fill="none" stroke="'+sr.c+'" stroke-width="3" points="'+pts+'"/>';
+    sr.v.forEach(function(v,i){s+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(v).toFixed(1)+'" r="4.5" fill="'+sr.c+'"><title>'+sr.n+' — '+cats[i]+': '+v.toFixed(1)+'</title></circle>'});
+    sr.v.forEach(function(v,i){if(skipFirst&&i===0){return;}
+      var dy=(si%2===0)?-9:15;
+      s+='<text x="'+X(i).toFixed(1)+'" y="'+(Y(v)+dy).toFixed(1)+'" text-anchor="middle" style="font-size:11.5px;font-weight:700" fill="'+sr.c+'">'+v.toFixed(1)+'</text>';});
+  });
+  s+='<line x1="'+L+'" x2="'+L+'" y1="'+T+'" y2="'+B+'" stroke="#c8d2dd"/><line x1="'+L+'" x2="'+R+'" y1="'+B+'" y2="'+B+'" stroke="#c8d2dd"/>';
+  s+='</svg>';
+  var lg=series.map(function(sr){return '<span class="chip" style="background:'+sr.c+'"></span>'+sr.n}).join(' ');
+  el(id).innerHTML=s+'<div class="legenda">'+lg+'</div>';
+}
+function barChart(id,cats,vals,yMin,yMax,fmt,color,yTick,refLine){
+  var W=920,H=410,L=64,R=895,T=30,B=340,slot=(R-L)/cats.length,bw=Math.min(120,slot*0.55);
+  var Y=function(v){return T+(B-T)*(1-(v-yMin)/(yMax-yMin))};
+  var s='<svg viewBox="0 0 920 '+H+'">';
+  for(var k=0;k<=4;k++){var v=yMin+(yMax-yMin)*k/4;var gy=Y(v);s+='<line class="grid" x1="'+L+'" x2="'+R+'" y1="'+gy+'" y2="'+gy+'"/><text class="tick" x="'+(L-7)+'" y="'+(gy+4)+'" text-anchor="end">'+yTick(v)+'</text>';}
+  if(refLine){var yl=Y(refLine.v);s+='<line x1="'+L+'" x2="'+R+'" y1="'+yl+'" y2="'+yl+'" stroke="#8f4f88" stroke-dasharray="7 5"/><text x="'+(L+4)+'" y="'+(yl-7)+'" text-anchor="start" style="font-size:12.5px;font-weight:700" fill="#8f4f88">'+refLine.l+'</text>';}
+  cats.forEach(function(c,i){var v=vals[i];var x=L+i*slot+(slot-bw)/2;var yv=Y(v);
+    s+='<rect x="'+x.toFixed(1)+'" y="'+Math.min(yv,B).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(0.5,Math.abs(B-yv)).toFixed(1)+'" rx="3" fill="'+(Array.isArray(color)?color[i]:color)+'"><title>'+c+': '+fmt(v)+'</title></rect>';
+    s+='<text class="tick" x="'+(x+bw/2).toFixed(1)+'" y="'+(v>=0?yv-8:yv+22).toFixed(1)+'" text-anchor="middle" style="font-size:16px;font-weight:700" fill="#001236">'+fmt(v)+'</text>';
+    s+='<text class="tick" x="'+(x+bw/2).toFixed(1)+'" y="'+(B+18)+'" text-anchor="middle" style="font-size:13.5px">'+c+'</text>';});
+  s+='</svg>';el(id).innerHTML=s;
+}
+function hbar(id,rows,ref){
+  var rh=50,T=26,L=185,R=890,max=Math.max.apply(null,rows.map(function(r){return r.v}))*1.12,H=T+rows.length*rh+18;
+  var X=function(v){return L+(R-L)*v/max};
+  var s='<svg viewBox="0 0 920 '+H+'">';
+  if(ref){var rx=X(ref);s+='<line x1="'+rx+'" x2="'+rx+'" y1="'+T+'" y2="'+(H-14)+'" stroke="#001236" stroke-dasharray="6 4"/><text x="'+rx+'" y="'+(T-6)+'" text-anchor="middle" font-size="11" fill="#001236">Brasil '+ref+'</text>';}
+  rows.forEach(function(r,i){var y=T+i*rh+8;var w=X(r.v)-L;
+    s+='<text class="tick" x="'+(L-8)+'" y="'+(y+20)+'" text-anchor="end" style="font-size:15px">'+r.n+'</text>';
+    s+='<rect x="'+L+'" y="'+y+'" width="'+w.toFixed(1)+'" height="30" rx="3" fill="'+(r.c||'#001236')+'"><title>'+r.n+': '+r.v+'</title></rect>';
+    s+='<text x="'+(L+w+8).toFixed(1)+'" y="'+(y+21)+'" style="font-size:16px;font-weight:700" fill="#001236">'+(r.f?r.f(r.v):r.v)+'</text>';});
+  s+='</svg>';el(id).innerHTML=s;
+}
+function hbar2(id,rows){
+  var rh=72,T=28,L=185,R=890,max=Math.max.apply(null,rows.map(function(r){return Math.max(r.a,r.d)}))*1.10,H=T+rows.length*rh+16;
+  var X=function(v){return L+(R-L)*v/max};
+  var s='<svg viewBox="0 0 920 '+H+'">';
+  rows.forEach(function(r,i){var y=T+i*rh;var wa=X(r.a)-L;var wd=X(r.d)-L;
+    s+='<text class="tick" x="'+(L-8)+'" y="'+(y+26)+'" text-anchor="end" style="font-size:15px;font-weight:600" fill="#001236">'+r.n+'</text>';
+    s+='<rect x="'+L+'" y="'+(y+2)+'" width="'+wa.toFixed(1)+'" height="26" rx="3" fill="#001236"><title>Admissões — '+r.n+': '+r.a.toFixed(2).replace('.',',')+' mi</title></rect>';
+    s+='<text x="'+(L+wa+8).toFixed(1)+'" y="'+(y+21)+'" style="font-size:15px;font-weight:700" fill="#001236">'+r.a.toFixed(2).replace('.',',')+' mi</text>';
+    s+='<rect x="'+L+'" y="'+(y+38)+'" width="'+wd.toFixed(1)+'" height="26" rx="3" fill="#D86DCD"><title>Desligamentos — '+r.n+': '+r.d.toFixed(2).replace('.',',')+' mi</title></rect>';
+    s+='<text x="'+(L+wd+8).toFixed(1)+'" y="'+(y+57)+'" style="font-size:15px;font-weight:700" fill="#9c3d92">'+r.d.toFixed(2).replace('.',',')+' mi</text>';
+  });
+  s+='</svg>';
+  el(id).innerHTML=s+'<div class="legenda"><span class="chip" style="background:#001236"></span>Admissões&nbsp;&nbsp;<span class="chip" style="background:#D86DCD"></span>Desligamentos</div>';
+}
+var ANOS=['2021','2022','2023','2024'];
+lineChart('chart-index',ANOS,[
+  {n:'Admissões CAGED',v:[100,112.9,116.6,128.5],c:'#001236'},
+  {n:'Ingressantes INEP',v:[100,120.6,126.6,127.0],c:'#009999'},
+  {n:'Matrículas INEP',v:[100,105.1,111.0,113.8],c:'#5cc5c5'},
+  {n:'Concluintes INEP',v:[100,97.0,103.6,100.5],c:'#33518f'},
+  {n:'Saldo CAGED (adm−desl)',v:[100,70.5,51.8,58.8],c:'#D86DCD'},
+  {n:'Salário mediano CAGED',v:[100,107.1,116.3,124.6],c:'#8f4f88'}
+],45,135,function(v){return v.toFixed(0)},true);
+barChart('chart-concl',['2022','2023','2024'],[16.76,17.86,18.44],0,22,function(v){return v.toFixed(2).replace('.',',')},'#001236',function(v){return v.toFixed(0)});
+barChart('chart-jan',['2021','2022','2023','2024','2025'],[7.87,7.99,8.16,8.16,8.63],7.4,9.0,function(v){return v.toFixed(2).replace('.',',')+'%'},'#D86DCD',function(v){return v.toFixed(1)+'%'},{v:8.33,l:'mês neutro (1/12) = 8,33%'});
+barChart('chart-enf',['Formandos Enfermagem','Contratações saúde superior','Desligamentos saúde superior'],[54.5,208.9,184.7],0,235,function(v){return v.toFixed(0)+' mil'},['#009999','#001236','#D86DCD'],function(v){return v.toFixed(0)});
+barChart('chart-prof',['Formandos Pedagogia','Contratações de professores','Desligamentos de professores'],[103.4,145.4,142.6],0,175,function(v){return v.toFixed(0)+' mil'},['#009999','#001236','#D86DCD'],function(v){return v.toFixed(0)});
+barChart('chart-tic',['Formandos Sist. Informação','Contratações TIC (CBO 212)','Desligamentos TIC (CBO 212)'],[61.8,139.6,125.7],0,175,function(v){return v.toFixed(0)+' mil'},['#009999','#001236','#D86DCD'],function(v){return v.toFixed(0)});
+hbar('chart-tic-sal',[{n:'TIC superior',v:5200,c:'#009999',f:function(x){return 'R$ '+x.toLocaleString('pt-BR')}},{n:'Saúde superior',v:3950,c:'#001236',f:function(x){return 'R$ '+x.toLocaleString('pt-BR')}},{n:'Advogados',v:3700,c:'#001236',f:function(x){return 'R$ '+x.toLocaleString('pt-BR')}},{n:'Professores',v:2109,c:'#001236',f:function(x){return 'R$ '+x.toLocaleString('pt-BR')}},{n:'Mercado formal',v:1741,c:'#D86DCD',f:function(x){return 'R$ '+x.toLocaleString('pt-BR')}}],null);
+hbar('chart-uf',[{n:'Santa Catarina',v:3.64,c:'#009999'},{n:'São Paulo',v:3.28,c:'#009999'},{n:'Minas Gerais',v:2.91,c:'#5cc5c5'},{n:'Paraná',v:2.78,c:'#5cc5c5'},{n:'Rio de Janeiro',v:1.76,c:'#D86DCD'}],2.47);
+lineChart('chart-ead',ANOS,[
+  {n:'Ingressantes EaD (% do total)',v:[62.8,65.2,66.4,66.8],c:'#D86DCD'},
+  {n:'Matrículas EaD (% do estoque)',v:[41.4,45.9,49.2,50.7],c:'#009999'}
+],38,72,function(v){return v.toFixed(0)+'%'});
+hbar('chart-form',[{n:'Pedagogia',v:103447,c:'#009999',f:function(x){return x.toLocaleString('pt-BR')}},{n:'Direito',v:98326,c:'#009999',f:function(x){return x.toLocaleString('pt-BR')}},{n:'Administração',v:76889,c:'#009999',f:function(x){return x.toLocaleString('pt-BR')}},{n:'Sistemas de Informação',v:61777,c:'#009999',f:function(x){return x.toLocaleString('pt-BR')}},{n:'Enfermagem',v:54476,c:'#009999',f:function(x){return x.toLocaleString('pt-BR')}}],null);
+hbar2('chart-gbo',[{n:'Varejo (521)',a:3.05,d:2.83},{n:'Limpeza (514)',a:1.85,d:1.64},{n:'Escritório (411)',a:1.70,d:1.51},{n:'Alimentação (513)',a:1.60,d:1.48},{n:'Produção (784)',a:1.48,d:1.22}]);
+lineChart('chart-inep-index',ANOS,[
+  {n:'Ingressantes',v:[100,120.6,126.6,127.0],c:'#009999'},
+  {n:'Matrículas',v:[100,105.1,111.0,113.8],c:'#5cc5c5'},
+  {n:'Concluintes',v:[100,97.0,103.6,100.5],c:'#001236'},
+  {n:'Vagas presenciais',v:[100,95.2,91.6,85.4],c:'#D86DCD'}
+],78,135,function(v){return v.toFixed(0)},true);
+hbar('chart-campos',[{n:'Pedagogia',v:887502,c:'#009999',f:function(x){return x.toLocaleString('pt-BR')}},{n:'Direito',v:652996,c:'#009999',f:function(x){return x.toLocaleString('pt-BR')}},{n:'Administração',v:652934,c:'#009999',f:function(x){return x.toLocaleString('pt-BR')}},{n:'Enfermagem',v:478008,c:'#009999',f:function(x){return x.toLocaleString('pt-BR')}},{n:'Sistemas de Informação',v:420280,c:'#009999',f:function(x){return x.toLocaleString('pt-BR')}},{n:'Psicologia',v:375574,c:'#5cc5c5',f:function(x){return x.toLocaleString('pt-BR')}},{n:'Contabilidade',v:322781,c:'#5cc5c5',f:function(x){return x.toLocaleString('pt-BR')}},{n:'Educação Física',v:303816,c:'#5cc5c5',f:function(x){return x.toLocaleString('pt-BR')}}],null);
+barChart('chart-areas',['Saúde','TIC','Sociais/com.','Básicos','Serviços','Educação','Artes','Negócios','Exatas','Agro','Engenharia'],[25.0,15.3,9.1,9.0,7.4,5.9,5.2,4.7,2.2,-2.4,-5.4],-8,30,function(v){return v.toFixed(1).replace('.',',')+'%'},['#009999','#009999','#009999','#009999','#009999','#009999','#009999','#009999','#009999','#D86DCD','#D86DCD'],function(v){return v.toFixed(0)+'%'});
+hbar('chart-inep-uf',[{n:'São Paulo',v:23.9,c:'#D86DCD',f:function(x){return x.toFixed(1).replace('.',',')+'%'}},{n:'Minas Gerais',v:9.3,c:'#009999',f:function(x){return x.toFixed(1).replace('.',',')+'%'}},{n:'Rio de Janeiro',v:9.2,c:'#009999',f:function(x){return x.toFixed(1).replace('.',',')+'%'}},{n:'Paraná',v:7.0,c:'#009999',f:function(x){return x.toFixed(1).replace('.',',')+'%'}},{n:'Rio Grande do Sul',v:5.7,c:'#009999',f:function(x){return x.toFixed(1).replace('.',',')+'%'}},{n:'Bahia',v:4.9,c:'#5cc5c5',f:function(x){return x.toFixed(1).replace('.',',')+'%'}},{n:'Santa Catarina',v:4.5,c:'#5cc5c5',f:function(x){return x.toFixed(1).replace('.',',')+'%'}},{n:'Ceará',v:3.7,c:'#5cc5c5',f:function(x){return x.toFixed(1).replace('.',',')+'%'}}],null);
+lineChart('chart-inep-ead',ANOS,[
+  {n:'Ingressantes EaD (% do total)',v:[62.8,65.1,66.3,66.8],c:'#D86DCD'},
+  {n:'Matrículas EaD (% do estoque)',v:[41.3,45.8,49.2,50.7],c:'#009999'}
+],35,72,function(v){return v.toFixed(0)+'%'},true);
+lineChart('chart-sem',['21S1','21S2','22S1','22S2','23S1','23S2','24S1','24S2','25S1','25S2','26S1','26S2*'],[
+  {n:'Admissões',v:[9.46,10.25,11.46,10.79,11.77,11.21,13.03,12.31,13.76,12.56,13.81,4.56],c:'#001236'},
+  {n:'Desligamentos',v:[7.92,8.93,10.09,10.15,10.76,10.74,11.72,11.94,12.55,12.52,12.91,4.33],c:'#D86DCD'},
+  {n:'Saldo líquido',v:[1.53,1.32,1.37,0.64,1.01,0.47,1.30,0.37,1.21,0.04,0.90,0.22],c:'#009999'}
+],-0.5,16,function(v){return v.toFixed(0)+' mi'},false);
+barChart('chart-saz',['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],[8.16,8.98,8.78,8.23,8.47,8.27,8.46,8.98,8.67,8.57,8.06,6.37],0,10,function(v){return v.toFixed(2).replace('.',',')+'%'},'#001236',function(v){return v.toFixed(0)+'%'},{v:8.33,l:'mês neutro (1/12) = 8,33%'});
+barChart('chart-feat',['t (tendência)','desl_lag_1m','salario_lag_1m','adm_media_12m','adm_lag_12m','adm_std_3m','adm_lag_1m','saldo_lag_1m'],[0.70,0.69,0.68,0.51,0.50,0.44,0.40,-0.37],-0.5,0.9,function(v){return v.toFixed(2).replace('.',',')},['#001236','#001236','#001236','#001236','#001236','#001236','#001236','#D86DCD'],function(v){return v.toFixed(1)});
+function showTab(t){
+  document.querySelectorAll('.tab').forEach(function(b){b.classList.toggle('on',b.id==='tab-'+t)});
+  document.querySelectorAll('.pane').forEach(function(p){p.classList.toggle('on',p.id==='pane-'+t)});
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
