@@ -36,6 +36,17 @@ O estudo usa os microdados do **Novo Caged (MTE)** para analisar e prever admiss
 
 A integração usa uma [ponte provisória CINE × CBO](notebooks/03_analytics/034_bridge_provisoria_cine_cbo.ipynb), curada pela equipe, que associa áreas específicas de formação a subgrupos ocupacionais. Uma área pode se relacionar a vários subgrupos e vice-versa. A ponte registra a confiança e a justificativa dos pares, e uma tabela de cobertura identifica as áreas sem correspondência.
 
+
+## 📊 Explore os resultados
+
+Acesse os principais produtos analíticos desenvolvidos durante o projeto.
+
+| Dashboard Unificado | Modelo Preditivo | Formação × Mercado |
+|:---:|:---:|:---:|
+| Indicadores Caged e INEP | Previsões de admissões | Análise de formação e demanda |
+| [Abrir dashboard](https://kevynzap.github.io/mba-novo-caged-data-engineering-free-edition/eda/dashboard_unificado_caged_inep.html?utm_source=chatgpt.com) | [Abrir previsões](https://kevynzap.github.io/mba-novo-caged-data-engineering-free-edition/relatorios/dashboard_modelo_admissoes.html) | [Abrir relatório](https://kevynzap.github.io/mba-novo-caged-data-engineering-free-edition/relatorios/Relatorio_Mensal_Formacao_Mercado.html) |
+| <img width="90" height="90" alt="qrcode_dashboard_unificado_caged_inep" src="https://github.com/user-attachments/assets/642c2d8a-a281-499f-b676-9f07520afa2e" /> | <img width="90" height="90" alt="qrcode_dashboard_modelo_admissoes" src="https://github.com/user-attachments/assets/52dda829-0fe2-4a16-bbb8-54add5545f7d" /> | <img width="90" height="90" alt="qrcode_Relatorio_Mensal_Formacao_Mercado" src="https://github.com/user-attachments/assets/49b19c13-3a61-4999-a69c-73722f1af4ae" /> |
+
 ## Desenho inicial da arquitetura
 
 O projeto adota uma arquitetura **Lakehouse baseada no padrão Medallion**, estruturando os dados em Landing, Bronze, Silver e Gold.
