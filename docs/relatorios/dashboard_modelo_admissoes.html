@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>DemandA · Modelo de Previsão de Admissões</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#f4f7fb;color:#001236}
+  header{background:linear-gradient(90deg,#001236,#004d7a);color:#fff;padding:26px 34px}
+  header h1{font-size:24px;font-weight:600}
+  header p{opacity:.85;font-size:13.5px;margin-top:6px}
+  .tabs{display:flex;gap:10px;padding:14px 34px;background:#fff;border-bottom:1px solid #dce4ee;flex-wrap:wrap}
+  .tab{border:1px solid #dce4ee;background:#f4f7fb;color:#001236;border-radius:999px;padding:9px 22px;font-size:14px;font-weight:600;cursor:pointer}
+  .tab.on{background:#009999;border-color:#009999;color:#fff}
+  .pane{display:none;max-width:1180px;margin:0 auto;padding:26px 34px 60px}
+  .pane.on{display:block}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px;margin-bottom:26px}
+  .kpi{background:#fff;border:1px solid #dce4ee;border-radius:10px;padding:16px 18px}
+  .tt{font-size:11.5px;letter-spacing:.4px;text-transform:uppercase;color:#8a97a5;font-weight:600}
+  .v{font-size:27px;font-weight:700;color:#001236;margin-top:4px}
+  .v .teal{color:#009999}
+  .v .pink{color:#D86DCD}
+  .t{font-size:12.5px;color:#5b7fa6;margin-top:4px;line-height:1.45}
+  .sec{background:#fff;border:1px solid #dce4ee;border-radius:10px;padding:22px 26px;margin-bottom:22px}
+  .sec h2{font-size:17.5px;font-weight:700;margin-bottom:14px;color:#001236}
+  .sec h2 .n{display:inline-block;background:#001236;color:#fff;border-radius:6px;padding:2px 9px;margin-right:9px;font-size:13px}
+  .sec p{font-size:14.5px;line-height:1.7;color:#22364d;margin-bottom:10px}
+  .sec b{color:#001236}
+  .metric{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:14px 0}
+  .card{border:1px solid #dce4ee;border-radius:8px;padding:14px 16px;background:#fbfdff}
+  .card h3{font-size:15px;color:#004d7a;margin-bottom:6px}
+  .card .fx{font-family:Consolas,monospace;font-size:13px;color:#001236;background:#eef5f9;border-radius:5px;padding:5px 8px;display:inline-block;margin-bottom:7px}
+  .card p{font-size:13px;line-height:1.6;color:#33518f;margin:0}
+  .why{background:#e6f5f5;border-left:4px solid #009999;border-radius:0 8px 8px 0;padding:14px 18px;margin:14px 0;font-size:14px;line-height:1.65;color:#004d7a}
+  .warn{background:#fbeaf9;border-left:4px solid #D86DCD;border-radius:0 8px 8px 0;padding:14px 18px;margin:14px 0;font-size:14px;line-height:1.65;color:#8f4f88}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin:12px 0}
+  th{background:#001236;color:#fff;text-align:left;padding:9px 12px;font-weight:600}
+  td{border-bottom:1px solid #e6edf5;padding:9px 12px;color:#22364d}
+  tr.hl td{background:#e6f5f5;font-weight:600;color:#004d7a}
+  .chart{margin:16px 0;text-align:center}
+  .chart .cap{font-size:12.5px;color:#5b7fa6;margin-top:4px}
+  .pink{color:#8f4f88;font-weight:600}
+  .tealtxt{color:#009999;font-weight:600}
+  ul{margin:8px 0 12px 20px}
+  li{font-size:14.5px;line-height:1.7;color:#22364d;margin-bottom:5px}
+  footer{background:#001236;color:#c9d6e4;padding:22px 34px;font-size:12.5px;line-height:1.7}
+  footer b{color:#fff}
+  .footwrap{max-width:1180px;margin:0 auto}
+</style>
+</head>
+<body>
+<header>
+  <h1>DemandA · Modelo de Previsão de Admissões</h1>
+  <p>Treino, validação temporal, blindagem contra vazamento e produto operacional — o fechamento do ciclo de ciência de dados (notebooks 035–038)</p>
+</header>
+
+<div class="tabs">
+  <button class="tab on" id="t1" onclick="showTab(1)">1 · Métricas &amp; Validação</button>
+  <button class="tab" id="t2" onclick="showTab(2)">2 · Modelo &amp; OLS</button>
+  <button class="tab" id="t3" onclick="showTab(3)">3 · Vazamento &amp; Conclusão</button>
+</div>
+
+<!-- ==================== ABA 1 ==================== -->
+<div class="pane on" id="pane1">
+  <div class="kpis">
+    <div class="kpi"><div class="tt">MASE — amostra top-20</div><div class="v"><span class="teal">0,80</span></div><div class="t">LightGBM: erro 20% menor que o baseline sazonal na mesma métrica</div></div>
+    <div class="kpi"><div class="tt">MAE — painel completo</div><div class="v">21,5</div><div class="t">Erro absoluto médio em admissões/mês por série — o melhor dos 4 modelos</div></div>
+    <div class="kpi"><div class="tt">Validação</div><div class="v">12 folds</div><div class="t">Backtest em janela expansiva (2025-01 a 2025-12), horizonte h=1</div></div>
+    <div class="kpi"><div class="tt">Painel de treino</div><div class="v">33.504</div><div class="t">698 séries UF×subgrupo × 48 meses (2022-01 a 2025-12)</div></div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="n">1</span>Como o modelo foi testado — validação temporal, não sorteio</h2>
+    <p>Nos livros de estatística (Bussab &amp; Morettin, <i>Estatística Básica</i>), separar <b>amostra de treino</b> e <b>amostra de teste</b> evita avaliar o modelo com dados que ele já viu. Em séries temporais há um detalhe crítico: <b>o tempo não pode ser embaralhado</b>. Se sorteássemos meses ao acaso, o modelo treinaria com o futuro (ex.: dezembro/2025) para “prever” o passado (ex.: março/2025) — nota boa na prova errada.</p>
+    <p>Por isso usamos <b>backtest em janela expansiva</b>: em cada um dos 12 folds mensais, o modelo treina com <b>todo</b> o histórico anterior ao mês de corte e prevê <b>só</b> o mês do corte (horizonte h=1, o horizonte operacional do produto). A cada fold a janela de treino cresce um mês — sempre com o teste depois do treino, sem exceção. É o equivalente, no tempo, de deixar a amostra de teste trancada até depois do exame.</p>
+    <p>As métricas são agregadas sobre os 12 folds, em dois escopos: o <b>painel completo</b> (698 séries, comparando os 4 modelos) e a <b>amostra top-20</b> por volume (onde mora o grosso das admissões, incluindo o SARIMAX clássico, estimado apenas nela).</p>
+  </div>
+
+  <div class="sec">
+    <h2><span class="n">2</span>As métricas, em linguagem de Estatística Básica</h2>
+    <div class="metric">
+      <div class="card"><h3>MAE — desvio absoluto médio</h3><div class="fx">MAE = (1/n) Σ |yᵢ − ŷᵢ|</div><p>A média dos erros em módulo (Bussab &amp; Morettin: a média dos desvios absolutos). Fica <b>na mesma unidade do negócio</b> — MAE 21,5 significa errar, em média, ~22 admissões por série-mês. Robusta a erros extremos.</p></div>
+      <div class="card"><h3>RMSE — raiz do erro quadrático médio</h3><div class="fx">RMSE = √( (1/n) Σ (yᵢ − ŷᵢ)² )</div><p>Raiz da média dos erros ao quadrado — a “variância do erro” voltando à unidade original. <b>Penaliza erros grandes</b> mais que o MAE: um desastre em uma série grande pesa. LightGBM 72,2 × naive sazonal 75,9.</p></div>
+      <div class="card"><h3>sMAPE — erro percentual simétrico</h3><div class="fx">sMAPE = 100·(1/n) Σ |y−ŷ| / ((|y|+|ŷ|)/2)</div><p>Erro relativo <b>simétrico</b> (divide pela média entre real e previsto, não só pelo real). Usamos em vez do MAPE porque <b>11,3% do painel tem admissões = 0</b> — o MAPE divide por zero ali e explode. O sMAPE permanece definido.</p></div>
+      <div class="card"><h3>MASE — erro escalado pelo baseline</h3><div class="fx">MASE = MAE(modelo) / MAE(naive in-sample)</div><p>O erro do modelo medido em “quantas vezes melhor que chutar o último valor”. É a métrica-regra do projeto: <b>MASE &lt; 1 vence o baseline</b>; comparável entre séries de escalas diferentes (SP × Roraima). Escala: 1,0 = empate com o chute.</p></div>
+    </div>
+    <div class="why"><b>Isso é importante porque…</b> nenhuma métrica sozinha conta a história: o MAE fala a linguagem do negócio, o RMSE protege contra erros catastróficos e o MASE responde à pergunta que interessa ao tomador de decisão — “é melhor do que a regra de bolso que eu já tenho?”. Escolhemos o modelo <b>pelo MAE/MASE, não pelo R²</b> (ver seção 4).</div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="n">3</span>A competição: 4 modelos, 12 folds, 2 escopos</h2>
+    <div class="chart" id="chart-mae"></div>
+    <div class="chart" id="chart-mase"></div>
+    <table>
+      <tr><th>Modelo</th><th>MAE (698 séries)</th><th>RMSE</th><th>MASE agregado</th><th>MASE top-20</th></tr>
+      <tr><td>Naive lag-1 — “repete o mês anterior” (baseline mínima)</td><td>43,5</td><td>—</td><td>1,51</td><td>1,66</td></tr>
+      <tr><td>OLS pooled — com efeitos fixos de UF e mês</td><td>36,8</td><td>—</td><td>1,11</td><td>1,40</td></tr>
+      <tr><td>Naive sazonal — “repete o mês do ano passado”</td><td>24,4</td><td>75,9</td><td>1,11</td><td>0,86</td></tr>
+      <tr><td>SARIMAX — clássico por série (estimado só na top-20)</td><td>—</td><td>—</td><td>—</td><td>0,93</td></tr>
+      <tr class="hl"><td>★ LightGBM global — 1 modelo para as 698 séries</td><td>21,5</td><td>72,2</td><td>1,36</td><td>0,80</td></tr>
+    </table>
+    <p style="font-size:12.5px;color:#5b7fa6">“—” = métrica não computada naquele escopo (SARIMAX é estimado por série e inviável para as 698; RMSE reportado para os finalistas). Baselines “naive” são as regras de bolso contra as quais todo modelo de previsão deve ser comparado.</p>
+  </div>
+
+  <div class="sec">
+    <h2><span class="n">4</span>Por que não avaliamos com MAPE nem R²</h2>
+    <p><b>MAPE</b> divide o erro pelo valor real — com <b>11,3% de meses em zero admissões</b> (séries pequenas e meses fracos), a métrica se torna indefinida ou infinita. O sMAPE corrige isso (seção 2).</p>
+    <p><b>R²</b> mede a fração da variância explicada — mas no painel global ele é <b>populacional</b>: basta prever bem SP×252 (dezenas de milhares de admissões) para o R² ir às alturas, mesmo errando feio em dezenas de séries pequenas. Ele também não tem a unidade do negócio e não responde “ganho versus baseline”. Ficou registrado como métrica descartada, com justificativa — a mesma disciplina aplicada à hit-rate e ao MSE.</p>
+    <div class="warn">Nota honesta: no MASE <b>agregado</b> (todas as séries, média simples) o LightGBM (1,36) <b>perde</b> para OLS e naive sazonal (1,11) — o erro relativo é pior nas séries pequenas, onde o modelo global tende à média. A escolha do LightGBM se apoia no MAE global (onde o volume está) e no MASE top-20 0,80; a limitação em séries pequenas está documentada e endereçada como evolução (modelos por estrato de volume).</div>
+  </div>
+</div>
+
+<!-- ==================== ABA 2 ==================== -->
+<div class="pane" id="pane2">
+  <div class="kpis">
+    <div class="kpi"><div class="tt">R² ajustado do screening</div><div class="v">0,9409</div><div class="t">OLS pooled em log1p do alvo, com efeitos fixos de UF e mês</div></div>
+    <div class="kpi"><div class="tt">Observações do screening</div><div class="v">14.954</div><div class="t">Após descartar linhas sem salário mediano defasado (7.382 linhas)</div></div>
+    <div class="kpi"><div class="tt">Features selecionadas</div><div class="v">3</div><div class="t">mes_sin, mes_cos e salario_mediano_lag_1 (VIF baixo, significativas)</div></div>
+    <div class="kpi"><div class="tt">Retidas com colinearidade</div><div class="v">4</div><div class="t">Documentadas com VIF — seguem para o LightGBM (tolera colinearidade)</div></div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="n">1</span>O papel do OLS: régua de features, não modelo final</h2>
+    <p>Antes de treinar o modelo final, rodamos um <b>OLS pooled</b> (regressão linear múltipla sobre todas as séries juntas) do log1p das admissões contra cada feature candidata, com <b>efeitos fixos</b> de UF e de mês — dummies que absorvem o que é constante de cada estado e de cada mês do ano. É a leitura clássica de Bussab &amp; Morettin do <b>teste t de significância</b>: sob a hipótese nula H₀: β = 0, um p-valor alto diz que a feature não traz informação além do ruído; o <b>coeficiente</b> diz o sentido e a magnitude do efeito no log (elasticidade aproximada).</p>
+    <p>Duas ressalvas que o OLS revelou e tratamos como mestres de obra: (i) as dummies de mês são <b>redundantes</b> com os harmônicos seno/cosseno do mês (duas formas de dizer “dezembro é fraco”) — o aviso de matriz singular é esperado e documentado; (ii) 7.382 linhas sem salário mediano defasado (meses sem admissões não têm mediana) caem do screening — e é por isso que esse descarte <b>não</b> foi herdado pelo LightGBM, que lida com NaN nativamente.</p>
+    <table>
+      <tr><th>Feature candidata</th><th>Veredito do OLS</th><th>Racional</th></tr>
+      <tr class="hl"><td>mes_sin, mes_cos</td><td>SELECIONADA</td><td>Sazononalidade anual (dez 6,37% × fev/ago 8,98% na EDA) — significativas, VIF baixo</td></tr>
+      <tr class="hl"><td>salario_mediano_lag_1</td><td>SELECIONADA</td><td>Correlação r 0,68 com o alvo na EDA; defasada 1 mês; significativa</td></tr>
+      <tr><td>admissoes_log_ma_12 / admissoes_log_ma_3</td><td>RETIDA (VIF 63 / 52)</td><td>Informativa mas colinear — segue só para o LightGBM</td></tr>
+      <tr><td>desligamentos_log_lag_1 / admissoes_log_lag_1</td><td>RETIDA (VIF 20 / 19)</td><td>Mesma família de conceito (giro) — segue só para o LightGBM</td></tr>
+      <tr><td>share_ead_def1, concluintes_def1, razao_contratacao_matricula</td><td>DESCARTADA</td><td>Sem significância estatística (p-valores altos) — não entram em nenhum modelo</td></tr>
+    </table>
+  </div>
+
+  <div class="sec">
+    <h2><span class="n">2</span>VIF — “uma medida por conceito”</h2>
+    <p>O <b>Variance Inflation Factor</b> mede quanto a variância de um coeficiente cresce por causa da colinearidade entre regressores (Bussab &amp; Morettin, capítulo de regressão múltipla). Regra prática do projeto: <b>VIF &gt; 10</b> sinaliza que duas features carregam praticamente a mesma informação — no OLS isso infla o erro-padrão e instabiliza os coeficientes (um positivo, outro negativo, cancelando-se).</p>
+    <div class="chart" id="chart-vif"></div>
+    <div class="why"><b>Isso é importante porque…</b> no OLS, colinearidade é veneno para a <i>interpretação</i> dos coeficientes. No LightGBM (árvores), ela é benigna: o modelo escolhe entre features redundantes a cada divisão, sem estimar coeficientes. Por isso mantivemos no modelo final as quatro features de giro (VIF 19–63) — a regra “uma medida por conceito” vale para <b>interpretar o OLS</b>, e a checagem garante que o ganho preditivo não depende de uma única variável.</div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="n">3</span>Por que o LightGBM foi selecionado</h2>
+    <ul>
+      <li><b>Ganha onde o volume está</b>: melhor MAE global (21,5 contra 24,4 do naive sazonal) e melhor MASE da top-20 (0,80 contra 0,86 do naive sazonal e 0,93 do SARIMAX) — a top-20 concentra a maior parte das admissões do país.</li>
+      <li><b>Um único modelo para 698 séries</b> — o SARIMAX exigiria uma estimativa por série (invivel em escala e sem suporte a covariáveis); o LightGBM global aprende padrões compartilhados entre UFs e subgrupos, incluindo sazonalidade via harmônicos.</li>
+      <li><b>NaN e categóricas nativos</b>: meses sem admissões (salário mediano ausente) e features INEP ausentes no warm-up não exigem imputação artificial — diferente do OLS, que perdeu 7.382 linhas por NaN.</li>
+      <li><b>Operacional em produção</b>: logging no MLflow, registro no Unity Catalog (v1) e serving em endpoint ativo — com validação bitwise entre o artefato carregado e o endpoint.</li>
+    </ul>
+    <p>O runner-up foi o <b>naive sazonal</b> (MASE agregado 1,11, empate com OLS) — e ele continua vivo no produto: é o <b>baseline de monitoramento</b>. Se o LightGBM em produção não vencer o naive sazonal mês a mês, o alerta dispara — o modelo tem de justar-se o emprego todos os meses.</p>
+  </div>
+</div>
+
+<!-- ==================== ABA 3 ==================== -->
+<div class="pane" id="pane3">
+  <div class="kpis">
+    <div class="kpi"><div class="tt">Violações no gate de vazamento</div><div class="v"><span class="teal">0</span></div><div class="t">Auditoria permanente e independente do código que treina (notebook 036)</div></div>
+    <div class="kpi"><div class="tt">Previsões geradas</div><div class="v">8.376</div><div class="t">698 séries × 12 meses (set/2026 a ago/2027) na gold.previsoes_admissoes</div></div>
+    <div class="kpi"><div class="tt">Admissões previstas — h=1 (set/2026)</div><div class="v">118.645</div><div class="t">vs. 135.502 reais em ago/2026 (razão 0,88 — agosto é pico sazonal)</div></div>
+    <div class="kpi"><div class="tt">Séries em pressão de contratação</div><div class="v"><span class="pink">176</span></div><div class="t">84% das admissões previstas concentram-se nesses 25% das séries</div></div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="n">1</span>Blindagem contra vazamento de dados</h2>
+    <p>Vazamento (leakage) é o pecado mortal do aprendizado de máquina: o modelo “vê” no treino uma informação que só existirá depois do momento da previsão — a nota vem alta na validação e desaba na produção. O projeto tem uma <b>regra de ouro</b>: toda feature CAGED entra com <b>lag ≥ 1 mês</b>; toda feature INEP (Censo anual) entra com <b>lag ≥ 1 ano</b>.</p>
+    <table>
+      <tr><th>Checagem do gate permanente (036)</th><th>Resultado</th></tr>
+      <tr><td>Lags 1/3/12 e médias móveis recalculados independentemente (SQL de janela) e comparados à feature</td><td>0 violações</td></tr>
+      <tr><td>Médias móveis 3/12 meses SEM o mês corrente na janela</td><td>0 violações</td></tr>
+      <tr><td>Features INEP constantes dentro do ano (defasagem respeitada — Censo não “vaza” para o meio do ano)</td><td>0 violações</td></tr>
+      <tr><td>Em todos os folds: treino 100% anterior ao teste</td><td>0 violações</td></tr>
+      <tr class="hl"><td>Warm-up (janelas iniciais incompletas — 1.396 linhas de fev/mar-2021)</td><td>Informativo — não é erro: são os meses em que a janela de 12 meses ainda não existe</td></tr>
+    </table>
+    <p>Na operação (notebook 037), uma premissa análoga: o salário mediano do último mês real entra calculado da silver como <b>salário de t−1</b> — nunca como se fosse do próprio mês previsto. Previsões futuras seguem recursivas: cada mês é previsto como h=1 (o horizonte validado), alimentando a previsão seguinte; desligamentos e salários desconhecidos entram como NaN — comportamento documentado e suportado pelo LightGBM.</p>
+    <div class="why"><b>Isso é importante porque…</b> a credibilidade de todo o restante do trabalho — métricas, seleção de modelo, produto — depende desta seção. Sem a blindagem, os números da aba 1 seriam apenas uma ilusão de retrospecção: performance medida com o gabarito na mesa.</div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="n">2</span>O produto: 12 meses de previsão por UF × subgrupo</h2>
+    <p>As 8.376 previsões (set/2026 a ago/2027) foram gravadas com versionamento e idempotência em <b>gold.previsoes_admissoes</b>. O h=1 é o horizonte de confiança total (só dados reais); horizontes maiores degradam gradualmente, como toda previsão recursiva. A trajetória da maior série (SP × subgrupo 252, escritórios/administração) reproduz a sazonalidade da EDA — vale em <b>dezembro</b> (8.059) e recuperação em <b>janeiro/fevereiro</b>:</p>
+    <div class="chart" id="chart-traj"></div>
+    <p>Sanidade do h=1: as maiores previsões são exatamente as maiores séries reais — SP×252 (9.561 admissões), SP×212 (6.646), SP×223 (5.564), SP×351 (3.761). Previsões brutas negativas (117 de 8.376, 1,4%) foram clipadas em zero com contagem e valor bruto preservados — admissões negativas não existem no negócio.</p>
+  </div>
+
+  <div class="sec">
+    <h2><span class="n">3</span>Desalinhamento formação × mercado</h2>
+    <p>Cruzando a previsão de 12 meses com a formação do Censo 2024 (repartida pela bridge CINE×CBO), medimos a <b>pressão de contratação</b>: admissões previstas por concluinte formado. A razão nacional tem tercis em 0,2 (p25) e 1,7 (p75) — a classificação é relativa ao próprio painel, sem limiares arbitrários.</p>
+    <div class="chart" id="chart-desal"></div>
+    <ul>
+      <li><b>Onde a formação não acompanha o mercado</b>: comércio/vendas (subgrupo 351) com <b>13,9 admissões por concluinte</b>; especialistas em administração (253) com 11,4; técnicos de nível médio (224) com 9,3 — os três concentrados em SP, DF, SC, ES e GO.</li>
+      <li><b>Onde a formação excede a contratação local</b>: subgrupos 211, 202, 242 e 226 (razão ≈ 0 — dezenas de milhares de concluintes contra poucas centenas de admissões) e, por UF, PI, PB, PA, TO e AL (razão 0,4–0,5) — padrão coerente com estados que formam mais do que contratam localmente.</li>
+      <li><b>Tendência</b>: pressão crescendo nos estados do Norte — AP (+72%), AC (+58%), RR (+51%) — e amenizando no restante.</li>
+      <li class="pink">Caveat honesto: concluinte não é proxy perfeita de oferta (o mercado contrata rotatividade, não só recém-formados) — o indicador mede pressão relativa, e a repartição da bridge é provisória. Ambos documentados na gold.</li>
+    </ul>
+  </div>
+
+  <div class="sec">
+    <h2><span class="n">4</span>Conclusão e fechamento do trabalho</h2>
+    <p>O ciclo de ciência de dados do DemandA está <b>completo e fechado</b>, com cada peça versionada e auditável:</p>
+    <ul>
+      <li><b>035 — Features</b>: wide table ouro de 68 meses (UF × subgrupo × mês), 21 features sem vazamento, reconciliada com o fato semestral (diferença zero).</li>
+      <li><b>036 — Treino e auditoria</b>: screening OLS (R²aj 0,9409), competição de 4 modelos com backtest temporal de 12 folds, gate permanente de vazamento (0 violações) — LightGBM global selecionado e registrado no Unity Catalog (v1), com endpoint de serving ativo e validação bitwise.</li>
+      <li><b>037 — Produto de previsão</b>: pipeline operacional recursivo (h=1 × 12) gravando 8.376 previsões versionadas na gold, pronto para re-execução mensal.</li>
+      <li><b>038 — Desalinhamento</b>: indicadores de pressão formação × mercado por UF × subgrupo na gold, alimentando decisões de planejamento da formação.</li>
+    </ul>
+    <p><b>A resposta central do projeto</b>: o mercado formal de admissões segue concentrado em funções de grande giro (comércio, escritório, alimentação) e a formação superior brasileira segue concentrada em áreas de baixa contratação relativa no escopo — <b>o desalinhamento é estrutural, mensurável e agora previsível</b> com 12 meses de antecedência, por UF e subgrupo ocupacional.</p>
+    <p><b>Evoluções registradas</b> (fora do escopo atual): modelos por estrato de volume (endereça o MASE agregado 1,36), repartição ponderada por confiança na bridge definitiva (MEC), monitoramento de acurácia h=1 à medida que os meses realizam, e atualização da formação quando o Censo 2025 publicar.</p>
+  </div>
+</div>
+
+<footer>
+  <div class="footwrap">
+    <b>DemandA · MBA Data Science — CAGED (fonte oficial) × INEP/Censo da Educação Superior</b><br>
+    Metodologia: painel 698 séries × 48 meses (2022-01 a 2025-12, 33.504 linhas); backtest em janela expansiva com 12 folds mensais (2025); gate permanente de vazamento com 0 violações; screening OLS com efeitos fixos e VIF; LightGBM global registrado no Unity Catalog e servido em endpoint. Previsões e desalinhamento em tabelas ouro versionadas. Definições de métricas, testes de hipóteses e regressão seguem a notação de <b>Bussab &amp; Morettin, Estatística Básica</b>; MASE conforme Hyndman &amp; Koehler (2006).<br>
+    Este painel usa a identidade visual do Observatório DemandA (navy #001236 · teal #009999 · rosa #D86DCD) — mesma família do dashboard unificado da EDA. Números gerados em 08/11/2026; previsões: versão 0.1.0, último mês real 2026-08.
+  </div>
+</footer>
+
+<script>
+function showTab(n){
+  for(var i=1;i<=3;i++){
+    document.getElementById('pane'+i).classList.toggle('on', i===n);
+    document.getElementById('t'+i).classList.toggle('on', i===n);
+  }
+  window.scrollTo(0,0);
+}
+var NAVY='#001236', TEAL='#009999', PINK='#D86DCD', NAVY2='#33518f', DEEP='#004d7a', DARKP='#8f4f88', GRID='#e6edf5', AXIS='#8a97a5';
+function fmt(v){return v.toLocaleString('pt-BR',{maximumFractionDigits:2});}
+function barChart(id, dados, titulo, unid, ref){
+  var W=860, H=340, pad={l:60,r:30,t:34,b:66}, max=0;
+  dados.forEach(function(d){if(d.v>max)max=d.v;});
+  if(ref&&ref.v>max)max=ref.v;
+  max*=1.14;
+  var iw=W-pad.l-pad.r, ih=H-pad.t-pad.b, n=dados.length, bw=iw/n*0.52, gap=iw/n;
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" style="max-width:100%">';
+  svg+='<text x="'+pad.l+'" y="20" font-size="14" font-weight="700" fill="'+DEEP+'">'+titulo+'</text>';
+  for(var g=1;g<=4;g++){var y=pad.t+ih-ih*g/4;
+    svg+='<line x1="'+pad.l+'" y1="'+y+'" x2="'+(W-pad.r)+'" y2="'+y+'" stroke="'+GRID+'"/>';
+    svg+='<text x="'+(pad.l-8)+'" y="'+(y+4)+'" font-size="11" fill="'+AXIS+'" text-anchor="end">'+fmt(max*g/4)+'</text>';
+  }
+  dados.forEach(function(d,i){
+    var x=pad.l+gap*i+(gap-bw)/2, h=ih*d.v/max, y=pad.t+ih-h;
+    svg+='<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+h+'" rx="5" fill="'+d.c+'"/>';
+    svg+='<text x="'+(x+bw/2)+'" y="'+(y-7)+'" font-size="14" font-weight="700" fill="'+d.c+'" text-anchor="middle">'+d.lbl+'</text>';
+    svg+='<text x="'+(x+bw/2)+'" y="'+(pad.t+ih+16)+'" font-size="12.5" fill="'+NAVY+'" text-anchor="middle" font-weight="600">'+d.l+'</text>';
+    if(d.sub) svg+='<text x="'+(x+bw/2)+'" y="'+(pad.t+ih+31)+'" font-size="11" fill="'+AXIS+'" text-anchor="middle">'+d.sub+'</text>';
+  });
+  if(ref){
+    var ry=pad.t+ih-ih*ref.v/max;
+    svg+='<line x1="'+pad.l+'" y1="'+ry+'" x2="'+(W-pad.r)+'" y2="'+ry+'" stroke="'+DARKP+'" stroke-width="2" stroke-dasharray="7,5"/>';
+    svg+='<text x="'+(W-pad.r)+'" y="'+(ry-6)+'" font-size="12" font-weight="600" fill="'+DARKP+'" text-anchor="end">'+ref.t+'</text>';
+  }
+  svg+='<text x="'+(W/2)+'" y="'+(H-6)+'" font-size="11.5" fill="'+AXIS+'" text-anchor="middle">'+unid+'</text>';
+  svg+='</svg>';
+  document.getElementById(id).innerHTML=svg;
+}
+function lineChart(id, pontos, titulo, unid){
+  var W=860, H=360, pad={l:60,r:30,t:34,b:64};
+  var vals=pontos.map(function(p){return p.v;}), max=Math.max.apply(null,vals)*1.1, min=Math.min.apply(null,vals)*0.88;
+  var iw=W-pad.l-pad.r, ih=H-pad.t-pad.b, n=pontos.length, step=iw/(n-1);
+  function Y(v){return pad.t+ih-(v-min)/(max-min)*ih;}
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" style="max-width:100%">';
+  svg+='<text x="'+pad.l+'" y="20" font-size="14" font-weight="700" fill="'+DEEP+'">'+titulo+'</text>';
+  for(var g=0;g<=4;g++){var yv=min+(max-min)*g/4, y=Y(yv);
+    svg+='<line x1="'+pad.l+'" y1="'+y+'" x2="'+(W-pad.r)+'" y2="'+y+'" stroke="'+GRID+'"/>';
+    svg+='<text x="'+(pad.l-8)+'" y="'+(y+4)+'" font-size="11" fill="'+AXIS+'" text-anchor="end">'+fmt(Math.round(yv))+'</text>';
+  }
+  var path='';
+  pontos.forEach(function(p,i){var x=pad.l+step*i;path+=(i?'L':'M')+x+' '+Y(p.v);});
+  svg+='<path d="'+path+'" fill="none" stroke="'+NAVY+'" stroke-width="3"/>';
+  pontos.forEach(function(p,i){
+    var x=pad.l+step*i, y=Y(p.v), up=(i%2===0);
+    svg+='<circle cx="'+x+'" cy="'+y+'" r="5" fill="'+(p.c||TEAL)+'"/>';
+    svg+='<text x="'+x+'" y="'+(up?y-12:y+20)+'" font-size="12.5" font-weight="700" fill="'+(p.c||TEAL)+'" text-anchor="middle">'+p.lbl+'</text>';
+    svg+='<text x="'+x+'" y="'+(pad.t+ih+18)+'" font-size="11.5" fill="'+NAVY+'" text-anchor="middle">'+p.l+'</text>';
+  });
+  svg+='<text x="'+(W/2)+'" y="'+(H-6)+'" font-size="11.5" fill="'+AXIS+'" text-anchor="middle">'+unid+'</text>';
+  svg+='</svg>';
+  document.getElementById(id).innerHTML=svg;
+}
+// Aba 1 — MAE (painel completo) e MASE (top-20)
+barChart('chart-mae',[
+  {l:'Naive lag-1',v:43.5,lbl:'43,5',c:NAVY2,sub:'baseline'},
+  {l:'OLS pooled',v:36.8,lbl:'36,8',c:NAVY2},
+  {l:'Naive sazonal',v:24.4,lbl:'24,4',c:NAVY2},
+  {l:'LightGBM',v:21.5,lbl:'21,5',c:TEAL,sub:'selecionado'}
+],'MAE — painel completo (698 séries, 12 folds)','erro médio absoluto em admissões/mês — menor é melhor');
+barChart('chart-mase',[
+  {l:'Naive lag-1',v:1.66,lbl:'1,66',c:NAVY2,sub:'baseline'},
+  {l:'OLS pooled',v:1.40,lbl:'1,40',c:NAVY2},
+  {l:'SARIMAX',v:0.93,lbl:'0,93',c:PINK,sub:'clássico por série'},
+  {l:'Naive sazonal',v:0.86,lbl:'0,86',c:NAVY2},
+  {l:'LightGBM',v:0.80,lbl:'0,80',c:TEAL,sub:'selecionado'}
+],'MASE — amostra top-20 por volume (12 folds)','erro relativo ao baseline — abaixo de 1,0 vence o naive',{v:1.0,t:'MASE = 1,0 — empate com o baseline'});
+// Aba 2 — VIF
+barChart('chart-vif',[
+  {l:'admissões MM 12m (log)',v:63,lbl:'63',c:PINK},
+  {l:'admissões MM 3m (log)',v:52,lbl:'52',c:PINK},
+  {l:'desligamentos t−1 (log)',v:20,lbl:'20',c:DARKP},
+  {l:'admissões t−1 (log)',v:19,lbl:'19',c:DARKP},
+  {l:'salário mediano t−1',v:3,lbl:'≈3',c:TEAL},
+  {l:'mes_sin / mes_cos',v:2,lbl:'≈2',c:TEAL}
+],'VIF por feature — screening OLS (selecionadas em teal)','inflação da variância — acima de 10 = colinearidade',{v:10,t:'VIF = 10 — limiar de colinearidade'});
+// Aba 3 — trajetória SP×252 (12 meses previstos)
+lineChart('chart-traj',[
+  {l:'set/26',v:9561,lbl:'9.561',c:TEAL},{l:'out/26',v:8962,lbl:'8.962'},{l:'nov/26',v:8367,lbl:'8.367'},
+  {l:'dez/26',v:8059,lbl:'8.059',c:PINK},{l:'jan/27',v:9075,lbl:'9.075'},{l:'fev/27',v:9049,lbl:'9.049'},
+  {l:'mar/27',v:8837,lbl:'8.837'},{l:'abr/27',v:9164,lbl:'9.164'},{l:'mai/27',v:9153,lbl:'9.153'},
+  {l:'jun/27',v:9064,lbl:'9.064'},{l:'jul/27',v:9073,lbl:'9.073'},{l:'ago/27',v:9249,lbl:'9.249'}
+],'SP × subgrupo 252 — previsão recursiva h=1..12 (maior série do painel)','admissões previstas por mês — vale sazonal em dezembro (rosa), h=1 em teal');
+// Aba 3 — desalinhamento por subgrupo
+barChart('chart-desal',[
+  {l:'351 Comércio/vendas',v:13.9,lbl:'13,9',c:PINK},
+  {l:'253 Administração',v:11.4,lbl:'11,4',c:PINK},
+  {l:'224 Técnicos n.médio',v:9.3,lbl:'9,3',c:PINK},
+  {l:'231 Finanças',v:2.7,lbl:'2,7',c:NAVY2},
+  {l:'212 TIC',v:2.4,lbl:'2,4',c:NAVY2},
+  {l:'223 Saúde n.superior',v:2.3,lbl:'2,3',c:NAVY2},
+  {l:'252 Escritório',v:1.6,lbl:'1,6',c:NAVY2}
+],'Desalinhamento — admissões previstas (12m) por concluinte do Censo 2024, por subgrupo','pressão de contratação — rosa = formação não acompanha; subgrupos 211/202/242/226 ficam ≈ 0 (excedente)');
+</script>
+</body>
+</html>
