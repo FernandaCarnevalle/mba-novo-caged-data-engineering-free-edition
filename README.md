@@ -348,6 +348,7 @@ O repositório é um trabalho em equipe. A autoria de cada parte está registrad
 - [`docs/eda/dashboard_unificado_caged_inep.html`](docs/eda/dashboard_unificado_caged_inep.html): dashboard HTML da EDA unificada Caged × INEP.
 - [`notebooks/03_analytics/034_bridge_provisoria_cine_cbo.ipynb`](notebooks/03_analytics/034_bridge_provisoria_cine_cbo.ipynb): bridge provisória CINE × CBO.
 - Roteiro unificado de apresentação EDA/modelo/entregável.
+- Notebooks [035](notebooks/03_analytics/035_gold_ml_features.ipynb), [036](notebooks/03_analytics/036_treino_backtest_admissoes.ipynb), [037](notebooks/03_analytics/037_previsoes_operacionais.ipynb) e [038](notebooks/03_analytics/038_desalinhamento_formacao_mercado.ipynb) (ML e previsão): desenvolvidos por Fernanda Carnevalle no Databricks e publicados no repositório por Kevyn Zap.
 
 ## Glossário de dados
 
