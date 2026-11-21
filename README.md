@@ -339,6 +339,16 @@ O [Relatório Mensal — Formação × Mercado de Trabalho](docs/relatorios/Rela
 
 O [notebook de backtest](notebooks/03_analytics/036_treino_backtest_admissoes.ipynb) e o [dashboard de avaliação do modelo](notebooks/03_analytics/EDA%20%281%29/00_EDA_CAGED/dashboard_modelo_admissoes.html) documentam a avaliação da previsão de admissões mensais do Novo Caged para um mês à frente, em **12 janelas expansivas de jan–dez/2025**. Nas **698 séries UF × subgrupo CBO**, o LightGBM teve **MAE de 21,5 admissões por série-mês** e **RMSE de 72,2**. O baseline sazonal teve MAE de **24,4** e RMSE de **75,9**. O MASE do LightGBM foi de **0,80** nas 20 séries de maior volume e de **1,36** no painel completo, onde o baseline sazonal obteve **1,11**.
 
+## Autoria das contribuições de EDA e estatística
+
+O repositório é um trabalho em equipe. A autoria de cada parte está registrada no histórico de commits. Os itens abaixo são de **Fernanda Carnevalle**:
+
+- [`notebooks/03_analytics/EDA.py`](notebooks/03_analytics/EDA.py) e [`notebooks/03_analytics/04_eda_rigorosa_bussab_moretin.py`](notebooks/03_analytics/04_eda_rigorosa_bussab_moretin.py): EDA do Novo Caged, incluindo a EDA rigorosa semestral segundo Bussab & Moretin.
+- [`docs/eda/EDA_caged.md`](docs/eda/EDA_caged.md), [`docs/eda/EDA_Inep.md`](docs/eda/EDA_Inep.md) e [`docs/eda/EDA_Unificada_Inep_Caged.md`](docs/eda/EDA_Unificada_Inep_Caged.md): documentação das análises exploratórias.
+- [`docs/eda/dashboard_unificado_caged_inep.html`](docs/eda/dashboard_unificado_caged_inep.html): dashboard HTML da EDA unificada Caged × INEP.
+- [`notebooks/03_analytics/034_bridge_provisoria_cine_cbo.ipynb`](notebooks/03_analytics/034_bridge_provisoria_cine_cbo.ipynb): bridge provisória CINE × CBO.
+- Roteiro unificado de apresentação EDA/modelo/entregável.
+
 ## Glossário de dados
 
 A documentação das tabelas do Novo Caged e do INEP nas camadas bronze, silver e gold está consolidada em [docs/dicionario_dados/glossario_de_dados.md](docs/dicionario_dados/glossario_de_dados.md), incluindo:
