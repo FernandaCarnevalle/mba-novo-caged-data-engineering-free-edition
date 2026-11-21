@@ -329,7 +329,9 @@ As previsões operacionais têm horizonte de 12 meses. As variáveis são constr
 
 ## Resultados de EDA e Machine Learning
 
-O [dashboard integrado DemandA](docs/eda/dashboard_unificado_caged_inep.html) registra os achados exploratórios do Novo Caged e do Censo da Educação Superior.
+O [dashboard Inep × Caged](docs/eda/dashboard_unificado_caged_inep.html) registra os achados exploratórios do Novo Caged e do Censo da Educação Superior.
+
+O [dashboard de ML de previsão de admissões](notebooks/03_analytics/EDA%20%281%29/00_EDA_CAGED/dashboard_modelo_admissoes.html) foi desenvolvido por Fernanda Carnevalle no Databricks e publicado no repositório por Kevyn Zap.
 
 O [Relatório Mensal — Formação × Mercado de Trabalho](docs/relatorios/Relatorio_Mensal_Formacao_Mercado.html) é o dashboard de produto para instituições de ensino: mapa do Brasil com previsões de 12 meses, diagnóstico de desalinhamento formação × demanda e glossário interativo, com os dados das tabelas gold embutidos no próprio arquivo HTML.
 
