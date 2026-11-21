@@ -296,8 +296,6 @@ Para blindar a leitura contra o artefato de cobertura, as mesmas estatísticas f
 
 # SEÇÃO 6: Feature Engineering para Séries Temporais
 
-> **Escopo:** nesta versão o cruzamento com a base FATEC foi removido — o EDA concentra-se exclusivamente nos dados CAGED.
-
 **Por que construir features:** um modelo não enxerga "o mercado de trabalho" — ele enxerga colunas numéricas. O feature engineering traduz a história econômica em sinais mensuráveis: o mês anterior (*lag* — inércia), a média dos últimos meses (*momentum*), o mesmo mês do ano anterior (sazonalidade), a posição no calendário (ciclo anual) e exógenas defasadas (desligamentos, salário). Tudo calculado **só com informação do passado**: "sem vazamento" significa não usar nada que só seria conhecido depois do mês que se quer prever — um modelo com vazamento parece excelente no treino e falha em produção.
 
 ## 6.1 Série mensal e features candidatas para o ML
@@ -439,7 +437,6 @@ Correlação de Pearson entre cada feature e as admissões em **t** e em **t+1**
 **5. Rastreabilidade**
 - ✅ Tabela: `workspace.silver.novo_caged_movimentacoes_semestral`
 - ✅ Derivada de: `workspace.silver.novo_caged_movimentacoes`
-- ✅ Referência FATEC: `workspace.silver.cursos_fatec_ocupacoes_cbo_2025` (fora do escopo do cruzamento nesta versão)
 
 ## 7.2 Recomendações Finais
 

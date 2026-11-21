@@ -28,8 +28,7 @@ A EDA rigorosa do Novo Caged ([`04_eda_rigorosa_bussab_moretin.py`](notebooks/03
 3. **Outliers**: método IQR e detecção robusta por MAD (*median absolute deviation*).
 4. **Relações bivariadas**: correlações de Pearson e Spearman entre admissões, desligamentos, salário e saldo.
 5. **Análise temporal**: decomposição STL, teste de estacionaridade ADF e autocorrelação (ACF/PACF).
-6. **Deep-dive FATEC × CAGED (2025)**: cobertura, alinhamento e perfil demográfico dos 33 CBOs qualificados.
-7. **Validação para a camada silver e recomendações** para modelagem.
+6. **Validação para a camada silver e recomendações** para modelagem.
 
 ### Arquivos de EDA e estatística
 

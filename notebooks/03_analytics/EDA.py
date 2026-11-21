@@ -3,13 +3,12 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC # EDA Rigorosa: Observatório de Demanda Profissional CAGED × FATEC
+# MAGIC # EDA Rigorosa: Observatório de Demanda Profissional CAGED
 # MAGIC ## Análise Exploratória segundo Bussab & Moretin (2010)
 # MAGIC
 # MAGIC **Autora:** Fernanda Carnevalle de Melo  
 # MAGIC **Data:** 2026-10-26  
-# MAGIC **Base:** `workspace.silver.novo_caged_movimentacoes_semestral` (2021S1–2026S2, 12 semestres; 2026S2 parcial: jul–ago)  
-# MAGIC **Cruzamento:** `workspace.silver.cursos_fatec_ocupacoes_cbo_2025` (33 CBOs qualificados)
+# MAGIC **Base:** `workspace.silver.novo_caged_movimentacoes_semestral` (2021S1–2026S2, 12 semestres; 2026S2 parcial: jul–ago)
 # MAGIC
 # MAGIC ---
 # MAGIC
@@ -66,14 +65,12 @@ warnings.filterwarnings('ignore')
 
 # Carregar dados semestral
 df_semestral = spark.table("workspace.silver.novo_caged_movimentacoes_semestral").toPandas()
-df_fatec = spark.table("workspace.silver.cursos_fatec_ocupacoes_cbo_2025").toPandas()
 
 # mediana_salario_admissao vem como Decimal (object) via Arrow — converter para float
 df_semestral['mediana_salario_admissao'] = df_semestral['mediana_salario_admissao'].astype('float64')
 
 print("✅ Tabelas carregadas com sucesso")
 print(f"   Semestral: {len(df_semestral)} linhas")
-print(f"   FATEC: {len(df_fatec)} linhas")
 
 # COMMAND ----------
 
@@ -81,7 +78,7 @@ print(f"   FATEC: {len(df_fatec)} linhas")
 # MAGIC ### Resumo 360°
 
 print("=" * 80)
-print("RESUMO EXECUTIVO - EDA CAGED SEMESTRAL × FATEC")
+print("RESUMO EXECUTIVO - EDA CAGED SEMESTRAL")
 print("=" * 80)
 
 # Estatísticas gerais
@@ -116,14 +113,6 @@ print(f"   Mínimo: {idades.min()} anos")
 print(f"   Mediana: {np.percentile(idades, 50):.0f} anos")
 print(f"   Máximo: {idades.max()} anos")
 print(f"   Variação: {idades.max() - idades.min()} ano(s)")
-
-print("\n🎓 COBERTURA FATEC")
-print(f"   Cursos FATEC no DE/PARA: {len(df_fatec)}")
-print(f"   CBOs qualificados: {df_fatec['cbo_codigo'].nunique()}")
-print(f"   Movimentações 2025 (CBOs FATEC): {df_fatec['movimentacoes_2025'].sum():,.0f}")
-total_admissoes_2025 = df_semestral[df_semestral['semestre'].str.contains('2025')]['admissoes'].sum()
-pct_fatec = (df_fatec['movimentacoes_2025'].sum() / total_admissoes_2025 * 100) if total_admissoes_2025 > 0 else 0
-print(f"   Cobertura (% do total 2025): {pct_fatec:.2f}%")
 
 print("\n" + "=" * 80)
 
@@ -621,83 +610,6 @@ fig.show()
 
 # MAGIC %md
 # MAGIC ---
-# MAGIC # SEÇÃO 6: Deep-Dive — Cruzamento FATEC × CAGED (2025)
-# MAGIC
-# MAGIC ## 6.1 Cobertura e Alinhamento FATEC
-
-# COMMAND ----------
-
-# Análise FATEC 2025
-df_2025 = df_semestral[df_semestral['semestre'].str.contains('2025')].copy()
-total_adm_2025 = df_2025['admissoes'].sum()
-
-print("\n🎓 ANÁLISE FATEC 2025")
-print(f"   Total de admissões 2025: {total_adm_2025:,.0f}")
-print(f"   Movimentações dos 33 CBOs FATEC: {df_fatec['movimentacoes_2025'].sum():,.0f}")
-print(f"   Cobertura: {(df_fatec['movimentacoes_2025'].sum() / total_adm_2025 * 100):.2f}%")
-print(f"   Cursos FATEC únicos: {df_fatec['curso'].nunique()}")
-print(f"   CBOs qualificados: {df_fatec['cbo_codigo'].nunique()}")
-
-# Análise de força de match
-print("\n📊 DISTRIBUIÇÃO DE FORÇA DE MATCH")
-print(f"   Forte (≥ 0.7): {(df_fatec['forca_match'] == 'forte').sum()} ({(df_fatec['forca_match'] == 'forte').sum() / len(df_fatec) * 100:.1f}%)")
-print(f"   Fraco (< 0.7): {(df_fatec['forca_match'] == 'fraco').sum()} ({(df_fatec['forca_match'] == 'fraco').sum() / len(df_fatec) * 100:.1f}%)")
-
-# Top 10 cursos FATEC por movimentações 2025
-top_cursos = df_fatec.nlargest(10, 'movimentacoes_2025')[['curso', 'ocupacao_cbo', 'movimentacoes_2025', 'similaridade', 'forca_match']]
-
-fig = go.Figure()
-fig.add_trace(go.Bar(
-    x=top_cursos['movimentacoes_2025'],
-    y=top_cursos['curso'],
-    orientation='h',
-    text=top_cursos['movimentacoes_2025'].apply(lambda x: f'{x:,.0f}'),
-    textposition='outside',
-    marker=dict(color=top_cursos['similaridade'], colorscale='Viridis', 
-                colorbar=dict(title="Similaridade"))
-))
-
-fig.update_layout(
-    title="Top 10 Cursos FATEC por Movimentações 2025",
-    xaxis_title="Movimentações",
-    yaxis_title="Curso",
-    height=500
-)
-fig.show()
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## 6.2 Perfil Demográfico dos CBOs FATEC
-
-# COMMAND ----------
-
-# Comparar perfis: CBOs FATEC vs. CAGED geral
-df_2025_semestral = df_semestral[df_semestral['semestre'].str.contains('2025')].copy()
-
-print("\n👥 PERFIL COMPARATIVO 2025")
-print("\n   CAGED GERAL:")
-print(f"      Salário mediano: R$ {df_2025_semestral['mediana_salario_admissao'].median():,.2f}")
-print(f"      Idade mediana: {df_2025_semestral['mediana_idade_admissao'].median():.0f} anos")
-
-print("\n   CBOs FATEC (agregado 2025):")
-sal_fatec = df_fatec['movimentacoes_2025'].sum() / len(df_fatec) if len(df_fatec) > 0 else 0
-print(f"      Movimentações médias por CBO: {sal_fatec:,.0f}")
-print(f"      Similaridade média: {df_fatec['similaridade'].mean():.3f}")
-print(f"      Similaridade mínima: {df_fatec['similaridade'].min():.3f}")
-print(f"      Similaridade máxima: {df_fatec['similaridade'].max():.3f}")
-
-# Distribuição de similaridade
-fig = px.histogram(df_fatec, x='similaridade', nbins=10, 
-                   color='forca_match', 
-                   title="Distribuição de Similaridade (DE/PARA FATEC × CBO)",
-                   labels={'similaridade': 'Similaridade', 'forca_match': 'Força'})
-fig.show()
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ---
 # MAGIC # SEÇÃO 7: Validação para Silver Layer & Recomendações
 # MAGIC
 # MAGIC ## 7.1 Checklist de Qualidade
@@ -732,7 +644,6 @@ print(f"   ✅ Nenhum valor suspeito (tabela já em Silver)")
 print("\n5️⃣ RASTREABILIDADE")
 print(f"   ✅ Tabela: workspace.silver.novo_caged_movimentacoes_semestral")
 print(f"   ✅ Derivada de: workspace.silver.novo_caged_movimentacoes")
-print(f"   ✅ Referência FATEC: workspace.silver.cursos_fatec_ocupacoes_cbo_2025")
 
 # COMMAND ----------
 
@@ -758,12 +669,7 @@ print("""
    → Próxima fase: análise UF × Seção para detectar regionalismos
    → Isso afeta granularidade do modelo
 
-3. **Alinhamento FATEC (18.54% cobertura 2025)**
-   → Os 33 CBOs representam recorte QUALIFICADO com forte alinhamento
-   → Modelo deve prever CAGED total, depois cruzar com FATEC
-   → Dashboard pode destacar alinhamento como "insights", não previsão
-
-4. **Transformações de Dados**
+3. **Transformações de Dados**
    → Log(Admissões) é mais normal que Admissões brutas
    → Testar Box-Cox transformation para Salário
    → Normalizar antes de modelagem com algoritmos sensíveis (KNN, SVM)
@@ -777,8 +683,7 @@ print("""
 
 1. Adicionar **índices sazonais semestrais**
 2. Criar **série por UF** (top 5 estados)
-3. Destacar **alinhamento FATEC** como métrica exploratória, não preditiva
-4. Incluir **intervalo de confiança 95%** nas projeções
+3. Incluir **intervalo de confiança 95%** nas projeções
 
 📖 REFERÊNCIAS ADICIONAIS:
 
@@ -801,8 +706,7 @@ print("=" * 80)
 # MAGIC ✅ **Tendência de crescimento** em admissões (~46% em 5 anos)  
 # MAGIC ✅ **Sazonalidade estável** (para modelagem temporal)  
 # MAGIC ✅ **Correlação forte** entre admissões e desligamentos (0,75)  
-# MAGIC ⚠️ **Alerta 2025S2:** saldo quase nulo — requer investigação  
-# MAGIC 🎓 **FATEC com forte alinhamento** (18.54% em 2025, 116 cursos mapeados)
+# MAGIC ⚠️ **Alerta 2025S2:** saldo quase nulo — requer investigação
 # MAGIC
 # MAGIC ### Próximas Etapas
 # MAGIC
