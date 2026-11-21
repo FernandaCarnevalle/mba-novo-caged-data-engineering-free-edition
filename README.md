@@ -9,7 +9,55 @@
 
 **Glossário de dados:** [glossário de dados](docs/dicionario_dados/glossario_de_dados.md)
 
+**Minhas contribuições (EDA, estatística e ML):** [EDA rigorosa, fundamentação estatística e modelo de previsão](#minhas-contribuições-eda-estatística-e-ml)
+
 **Dashboard do produto:** [Relatório Mensal — Formação × Mercado de Trabalho](docs/relatorios/Relatorio_Mensal_Formacao_Mercado.html) — mapa, previsões e diagnóstico de desalinhamento com glossário interativo
+
+## Minhas contribuições: EDA, estatística e ML
+
+Este bloco reúne o trabalho de **Fernanda Carnevalle de Melo** em análise exploratória, estatística e modelagem. O repositório é um trabalho em equipe, e a autoria de cada arquivo está registrada no histórico de commits.
+
+### Fundamentação estatística
+
+As análises seguem **Bussab & Moretin (2010), *Estatística Básica*** (6ª ed.), com apoio de Tukey (1977) para EDA, Cleveland (1993) para visualização, Box & Cox (1964) para transformações e Rousseeuw & Hubert (2011) para detecção robusta de outliers.
+
+A EDA rigorosa do Novo Caged ([`04_eda_rigorosa_bussab_moretin.py`](notebooks/03_analytics/04_eda_rigorosa_bussab_moretin.py)) é organizada em sete seções:
+
+1. **Resumo executivo**: achados principais e resumo 360° das tabelas.
+2. **Distribuições marginais**: admissões semestrais, salário mediano e idade mediana, com histograma, KDE, box-plot, Q-Q plot, teste de normalidade de Shapiro-Wilk e assimetria/curtose.
+3. **Outliers**: método IQR e detecção robusta por MAD (*median absolute deviation*).
+4. **Relações bivariadas**: correlações de Pearson e Spearman entre admissões, desligamentos, salário e saldo.
+5. **Análise temporal**: decomposição STL, teste de estacionaridade ADF e autocorrelação (ACF/PACF).
+6. **Deep-dive FATEC × CAGED (2025)**: cobertura, alinhamento e perfil demográfico dos 33 CBOs qualificados.
+7. **Validação para a camada silver e recomendações** para modelagem.
+
+### Arquivos de EDA e estatística
+
+| Arquivo | Conteúdo |
+| --- | --- |
+| [`04_eda_rigorosa_bussab_moretin.py`](notebooks/03_analytics/04_eda_rigorosa_bussab_moretin.py) | EDA rigorosa do Novo Caged semestral (2021S1–2025S2), com as sete seções acima. |
+| [`EDA.py`](notebooks/03_analytics/EDA.py) | Notebook de EDA do Novo Caged. |
+| [`docs/eda/EDA_caged.md`](docs/eda/EDA_caged.md) | Relatório da EDA do Caged: série semestral completa, recálculo sem o semestre parcial 2026S2, decomposição STL, estacionaridade, features candidatas e índice sazonal mensal. |
+| [`docs/eda/EDA_Inep.md`](docs/eda/EDA_Inep.md) | Relatório da EDA do Censo da Educação Superior (2021–2024): distribuições por campo CINE, outliers por UF, evolução da modalidade e features para o modelo integrado. |
+| [`docs/eda/EDA_Unificada_Inep_Caged.md`](docs/eda/EDA_Unificada_Inep_Caged.md) | Integração das duas bases com coerência temporal (ano↔ano, semestre↔semestre, mês↔mês), correlações em 108 observações UF × ano, ponte CBO × CINE, conjunto final de features e limites da análise. |
+| [`dashboard_unificado_caged_inep.html`](docs/eda/dashboard_unificado_caged_inep.html) | Dashboard da EDA unificada Caged × INEP. |
+| [`034_bridge_provisoria_cine_cbo.ipynb`](notebooks/03_analytics/034_bridge_provisoria_cine_cbo.ipynb) | Bridge provisória CINE × CBO. |
+| Roteiro unificado de apresentação EDA/modelo/entregável ([`.docx`](notebooks/03_analytics/EDA%20%281%29/00_EDA_CAGED/Roteiro_Unificado_EDA_Modelo_Entregavel.docx)) | Roteiro que conecta EDA, modelo e entregável, com bloco dedicado sobre lags. |
+
+### Modelo de previsão de admissões (ML)
+
+O escopo do modelo é prever **admissões mensais** por **UF × grupo ocupacional (CBO)**, ou seja, 27 UFs × 4 grupos = 108 séries. A validação usa janela expansiva ([Tashman, 2000](docs/eda/EDA_Unificada_Inep_Caged.md)), sem embaralhar o tempo, e as features do INEP têm defasagem mínima de um ano.
+
+As métricas escolhidas são MAE, MAPE e RMSE. R², acurácia direcional e MSE ficaram de fora, porque o R² premia modelos ingênuos que seguem a tendência, a acurácia direcional esconde a magnitude do erro e o MSE não tem leitura na unidade de negócio.
+
+Os notebooks de ML são:
+
+- [035 — features de ML na camada gold](notebooks/03_analytics/035_gold_ml_features.ipynb)
+- [036 — treino e backtest de admissões](notebooks/03_analytics/036_treino_backtest_admissoes.ipynb)
+- [037 — previsões operacionais de 12 meses](notebooks/03_analytics/037_previsoes_operacionais.ipynb)
+- [038 — desalinhamento formação × mercado](notebooks/03_analytics/038_desalinhamento_formacao_mercado.ipynb)
+
+Esses notebooks foram desenvolvidos por Fernanda Carnevalle no Databricks e publicados no repositório por Kevyn Zap.
 
 ## Problema de negócio
 
@@ -340,52 +388,6 @@ O [Relatório Mensal — Formação × Mercado de Trabalho](docs/relatorios/Rela
 - **Triagem de variáveis para previsão mensal.** Na série do Caged, as maiores correlações de Pearson com as admissões do mês seguinte foram tendência (**0,70**), desligamentos do mês anterior (**0,69**) e salário do mês anterior (**0,68**). A correlação das admissões defasadas em um mês foi **0,40**. Esses valores medem a associação exploratória de cada variável com o alvo.
 
 O [notebook de backtest](notebooks/03_analytics/036_treino_backtest_admissoes.ipynb) e o [dashboard de avaliação do modelo](notebooks/03_analytics/EDA%20%281%29/00_EDA_CAGED/dashboard_modelo_admissoes.html) documentam a avaliação da previsão de admissões mensais do Novo Caged para um mês à frente, em **12 janelas expansivas de jan–dez/2025**. Nas **698 séries UF × subgrupo CBO**, o LightGBM teve **MAE de 21,5 admissões por série-mês** e **RMSE de 72,2**. O baseline sazonal teve MAE de **24,4** e RMSE de **75,9**. O MASE do LightGBM foi de **0,80** nas 20 séries de maior volume e de **1,36** no painel completo, onde o baseline sazonal obteve **1,11**.
-
-## Minhas contribuições: EDA, estatística e ML
-
-Este bloco reúne o trabalho de **Fernanda Carnevalle de Melo** em análise exploratória, estatística e modelagem. O repositório é um trabalho em equipe, e a autoria de cada arquivo está registrada no histórico de commits.
-
-### Fundamentação estatística
-
-As análises seguem **Bussab & Moretin (2010), *Estatística Básica*** (6ª ed.), com apoio de Tukey (1977) para EDA, Cleveland (1993) para visualização, Box & Cox (1964) para transformações e Rousseeuw & Hubert (2011) para detecção robusta de outliers.
-
-A EDA rigorosa do Novo Caged ([`04_eda_rigorosa_bussab_moretin.py`](notebooks/03_analytics/04_eda_rigorosa_bussab_moretin.py)) é organizada em sete seções:
-
-1. **Resumo executivo**: achados principais e resumo 360° das tabelas.
-2. **Distribuições marginais**: admissões semestrais, salário mediano e idade mediana, com histograma, KDE, box-plot, Q-Q plot, teste de normalidade de Shapiro-Wilk e assimetria/curtose.
-3. **Outliers**: método IQR e detecção robusta por MAD (*median absolute deviation*).
-4. **Relações bivariadas**: correlações de Pearson e Spearman entre admissões, desligamentos, salário e saldo.
-5. **Análise temporal**: decomposição STL, teste de estacionaridade ADF e autocorrelação (ACF/PACF).
-6. **Deep-dive FATEC × CAGED (2025)**: cobertura, alinhamento e perfil demográfico dos 33 CBOs qualificados.
-7. **Validação para a camada silver e recomendações** para modelagem.
-
-### Arquivos de EDA e estatística
-
-| Arquivo | Conteúdo |
-| --- | --- |
-| [`04_eda_rigorosa_bussab_moretin.py`](notebooks/03_analytics/04_eda_rigorosa_bussab_moretin.py) | EDA rigorosa do Novo Caged semestral (2021S1–2025S2), com as sete seções acima. |
-| [`EDA.py`](notebooks/03_analytics/EDA.py) | Notebook de EDA do Novo Caged. |
-| [`docs/eda/EDA_caged.md`](docs/eda/EDA_caged.md) | Relatório da EDA do Caged: série semestral completa, recálculo sem o semestre parcial 2026S2, decomposição STL, estacionaridade, features candidatas e índice sazonal mensal. |
-| [`docs/eda/EDA_Inep.md`](docs/eda/EDA_Inep.md) | Relatório da EDA do Censo da Educação Superior (2021–2024): distribuições por campo CINE, outliers por UF, evolução da modalidade e features para o modelo integrado. |
-| [`docs/eda/EDA_Unificada_Inep_Caged.md`](docs/eda/EDA_Unificada_Inep_Caged.md) | Integração das duas bases com coerência temporal (ano↔ano, semestre↔semestre, mês↔mês), correlações em 108 observações UF × ano, ponte CBO × CINE, conjunto final de features e limites da análise. |
-| [`dashboard_unificado_caged_inep.html`](docs/eda/dashboard_unificado_caged_inep.html) | Dashboard da EDA unificada Caged × INEP. |
-| [`034_bridge_provisoria_cine_cbo.ipynb`](notebooks/03_analytics/034_bridge_provisoria_cine_cbo.ipynb) | Bridge provisória CINE × CBO. |
-| Roteiro unificado de apresentação EDA/modelo/entregável ([`.docx`](notebooks/03_analytics/EDA%20%281%29/00_EDA_CAGED/Roteiro_Unificado_EDA_Modelo_Entregavel.docx)) | Roteiro que conecta EDA, modelo e entregável, com bloco dedicado sobre lags. |
-
-### Modelo de previsão de admissões (ML)
-
-O escopo do modelo é prever **admissões mensais** por **UF × grupo ocupacional (CBO)**, ou seja, 27 UFs × 4 grupos = 108 séries. A validação usa janela expansiva ([Tashman, 2000](docs/eda/EDA_Unificada_Inep_Caged.md)), sem embaralhar o tempo, e as features do INEP têm defasagem mínima de um ano.
-
-As métricas escolhidas são MAE, MAPE e RMSE. R², acurácia direcional e MSE ficaram de fora, porque o R² premia modelos ingênuos que seguem a tendência, a acurácia direcional esconde a magnitude do erro e o MSE não tem leitura na unidade de negócio.
-
-Os notebooks de ML são:
-
-- [035 — features de ML na camada gold](notebooks/03_analytics/035_gold_ml_features.ipynb)
-- [036 — treino e backtest de admissões](notebooks/03_analytics/036_treino_backtest_admissoes.ipynb)
-- [037 — previsões operacionais de 12 meses](notebooks/03_analytics/037_previsoes_operacionais.ipynb)
-- [038 — desalinhamento formação × mercado](notebooks/03_analytics/038_desalinhamento_formacao_mercado.ipynb)
-
-Esses notebooks foram desenvolvidos por Fernanda Carnevalle no Databricks e publicados no repositório por Kevyn Zap.
 
 ## Glossário de dados
 
